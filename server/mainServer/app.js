@@ -5,14 +5,16 @@ const morgan = require("morgan");
 const mongoose = require("mongoose");
 const app = express();
 const authRoute = require("../routes/auth");
-const userRoute = require("../routes/user.route")
+const userRoute = require("../routes/user.route");
+const orgRoute = require("../routes/org.route");
 const config = require("./DB");
+const url = 'mongodb+srv://badgebookdb:badgebookdb2019@cluster0-pn3a6.mongodb.net/test?retryWrites=true&w=majority'
 
 
 mongoose.set('useCreateIndex', true)
 
 mongoose
-    .connect(config.DB, {
+    .connect(url, {
         useUnifiedTopology: true,
         useNewUrlParser: true,
     })
@@ -34,8 +36,9 @@ app.use(cors());
 
 
 
-app.use("/auth", authRoute)
-app.use("/user",userRoute)
+app.use("/auth", authRoute);
+app.use("/user",userRoute);
+app.use('/org', orgRoute)
 
 app.get("/", (req, res) => {
     res.send("Hello")

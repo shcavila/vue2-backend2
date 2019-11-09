@@ -7,7 +7,7 @@ const config = require("./config")
 const jwt = require("jsonwebtoken")
  
 
- 
+ //done
 function findUser(username) {
   return new Promise(function (resolve, reject) {
     console.log("FINDING IN THE USER COLLECTION")
@@ -27,6 +27,8 @@ function findUser(username) {
       })
   })
 }
+
+//done
  
 async function findOrg(username) {
   try {
@@ -58,7 +60,7 @@ async function findOrg(username) {
     console.log("Unexpected error occured!!!");
   }
 }
- 
+ //done
 userRoute.route("/login").post(function (req, res) {
   tempdata = {};
   console.log("LOGIN USER: " + req.body)
@@ -117,7 +119,7 @@ userRoute.route("/login").post(function (req, res) {
  
  
  
- 
+ //done
 var tempdata = {
   username: "",
   password: ""
@@ -128,11 +130,12 @@ userRoute.route("/signup").post((req, res) => {
 });
  
  
- 
+ //done
 userRoute.route("/signedup").get((req, res) => {
   res.status(200).json(tempdata)
 })
  
+//done
 userRoute.route("/userType").post((req, res) => {
   console.log(req.body.credential)
   var user = jwt.decode(req.body.credential)
@@ -150,6 +153,7 @@ function addAndAvailBadge(data, User) {
     Organization.findOne({ badges: { $elemMatch: { code: data.code, granted: false } } })
       .then((doc) => {
         if (doc) {
+          console.log(doc)
           var badges = doc.badges;
           for (var i = 0; i < badges.length; ++i) {
             if (badges[i].code == data.code) {

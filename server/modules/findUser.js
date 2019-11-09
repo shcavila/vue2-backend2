@@ -11,9 +11,9 @@ module.exports.findUser = function(username) {
         .then(doc => {
           if (doc) {
             console.log("THE USER INFO: " + doc)
-            resolve(doc);
+            resolve({data:doc});
           } else {
-            resolve("not found")
+            resolve({data:"not found"})
           }
         }).catch(err => {
           reject(err);

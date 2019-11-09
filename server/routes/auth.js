@@ -3,33 +3,34 @@ const authRoute = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Org = require('../modules/findOrg');
-const config = require('./config')
-const User = require('../modules/findUser')
+const config = require('./config');
+const User = require('../modules/findUser');
+
 
 authRoute.route("/login").post(function (req, res) {
-    tempdata = {};
-    console.log("LOGIN USER: " + req.body)
+   
+    console.log("LOGIN USER: " + req.body.username)
     getResult();
     async function getResult() {
       try {
-        var fuser = await User.findUser(req.body.username);
-        console.log("result: " + fuser);
+        var fuser = await Org.findOrg(req.body.username);
+        console.log("result: " + fuser.data);
         console.log("finalizing request!")
-        if (fuser.data != "not found") {
-          bcrypt.compare(req.body.password, fuser.password)
+        if (fuser!= "not found") {
+          bcrypt.compare(req.body.password, fuser.data.password)
             .then(match => {
               if (match) {
                 console.log("correct")
                 var token = jwt.sign({
-                  username: fuser.username,
-                  type: fuser.type,
+                  username: fuser.data.username,
+                  type: fuser.data.type,
                 }, config.secret, {
                     expiresIn: 86400 // expires in 24 hours
                   });
                 res.status(200).send({
                   auth: true,
                   token: token,
-                  type: fuser.type,
+                  type: fuser.data.type,
                   message: "login successful"
                 });
               } else {
@@ -88,4 +89,19 @@ authRoute.route("/login").post(function (req, res) {
       userType: type
     })
   })
+
+  var tempdata = {
+    username: "",
+    password: ""
+  }
+
+  authRoute.route("signup").post((req, res) => {
+    tempdata = req.body
+    res.status(200).end();
+  });
+
+  authRoute.route("/signedup").get((req, res) => {
+    res.status(200).json(tempdata)
+  })
+   
 module.exports = authRoute

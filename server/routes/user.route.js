@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 const Org = require('../modules/findOrg');
 const config = require('./config')
 const User = require('../models/regUser')
-
+const tempdata = {};
 
 userRoute.route("/signup").post((req, res) => {
     tempdata = req.body
@@ -79,6 +79,9 @@ userRoute.route("/fullsignup").post((req, res) => {
     }
     getUserBadges();
   });
+
+
+  
   
 
   module.exports = userRoute

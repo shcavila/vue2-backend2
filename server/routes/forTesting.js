@@ -327,6 +327,7 @@ userRoute.route('/addrecipient').post((req, res) => {
   add();
 })
  
+//done
 function getBadges(username) {
   return new Promise(function(resolve, reject) {
     Organization.find({}, "badges").then(docs => {
@@ -338,6 +339,8 @@ function getBadges(username) {
   })
 }
  
+
+//done
 userRoute.route("/userbadges").post((req, res) => {
   async function getUserBadges() {
     var user = jwt.decode(req.body.user);

@@ -1,14 +1,14 @@
 const Organization = require("../models/organization");
-const user = require('./findUser')
+const user = require('./findUser');
 
 
 module.exports.findOrg = async function (username) {
   try {
     var status = await user.findUser(username);
     return new Promise(function (resolve, reject) {
-      console.log("result from user: " + status.data);
+      //console.log("result from user: " + status.data);
       if (status.data == "not found") {
-        console.log("FINDING IN ORGANIZATION COLLECTION");
+        //console.log("FINDING IN ORGANIZATION COLLECTION");
         Organization.findOne({
           username: username
         })
@@ -21,13 +21,13 @@ module.exports.findOrg = async function (username) {
           }).catch(err => {
             reject(err);
             console.log(err);
-          })
+          });
       } else {
         resolve( status );
       }
-    })
+    });
   } catch (err) {
     
     console.log("Unexpected error occured!!!");
   }
-}
+};

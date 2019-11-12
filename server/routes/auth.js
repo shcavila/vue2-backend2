@@ -8,8 +8,6 @@ const Org = require('../modules/findOrg');
 
 
 authRoute.route('/login').post(function (req, res) {
-
-  console.log('LOGIN USER: ' + req.body.username)
   getResult();
   async function getResult() {
     try {

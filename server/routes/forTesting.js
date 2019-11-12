@@ -393,7 +393,7 @@ async function deleteAll() {
  
  
  
- 
+ //done
 //REGULAR USER SIGN UP
 userRoute.route("/fullsignup").post((req, res) => {
   // var result = deleteAll();
@@ -498,7 +498,7 @@ function orgInfo(username) {
 }
  
  
- 
+ //done
 userRoute.route("/offerbadge").post((req, res) => {
   async function offer() {
     var org = jwt.decode(req.body.user);
@@ -520,7 +520,7 @@ userRoute.route("/offerbadge").post((req, res) => {
   offer();
 })
  
- 
+ //done
 userRoute.route("/badges-org").post((req, res) => {
   async function getOrgBadges() {
     var user = jwt.decode(req.body.data);
@@ -592,7 +592,7 @@ function findSameCode(bcode) {
     })
   })
 }
- 
+ //done
 userRoute.route("/validatecode").post((req, res) => {
  
   async function checkCode() {
@@ -615,7 +615,7 @@ userRoute.route("/validatecode").post((req, res) => {
  
  
 //========================================================================================================
- 
+ //done
 userRoute.route("/userInfo").post((req, res) => {
   var user = jwt.decode(req.body.data);
   getResult();

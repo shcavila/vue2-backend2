@@ -26,6 +26,10 @@ var BadgeSchema = new mongoose.Schema({
     descriptions    : {
       type: String,
     },
+    granted:{
+      type: Boolean,
+      required:true
+    },
     date:{month: String, day: Number, year: Number}
     
     

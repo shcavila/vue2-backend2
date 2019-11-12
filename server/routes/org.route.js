@@ -10,6 +10,8 @@ const Code = require('../modules/checkCode')
 const Badges = require('../models/Badges')
 
 
+
+
 orgRoute.route('/orgsignup').post((req, res) => {
   console.log(req.body)
   
@@ -23,7 +25,7 @@ orgRoute.route('/orgsignup').post((req, res) => {
           org.save()
             .then(() => {
               var token = jwt.sign({
-                orgname: org.username,
+                orgname: org._id,
                 type: org.type
               }, config.secret, {
                   expiresIn: 86400
@@ -55,16 +57,13 @@ orgRoute.route('/orgsignup').post((req, res) => {
   orgRoute.route('/validatecode').post((req,res) =>{
     async function checkCode() {
       var status = await Code.findSameCode(req.body.code);
-      console.log("RESULT FROM ORG COLLECTIN: " + status);
-      if (status == "notTaken") {
-        console.log("THE CODE " + req.body.code + "IS NOT YET TAKEN!");
+      if (status == 'notTaken') {
         res.status(200).json({
-          message: "Ok"
+          message: 'Ok'
         })
       } else {
-        console.log("THE CODE " + req.body.code + "IS ALREADY TAKEN!");
         res.status(400).json({
-          message: "Code is taken, regenerate new!"
+          message: 'Code is taken, regenerate new!'
         })
       }
     }
@@ -73,13 +72,14 @@ orgRoute.route('/orgsignup').post((req, res) => {
   });
 
   orgRoute.route('/offerbadge').post((req, res) => {
-    orgID = jwt.decode(req.body.user)
-    req.body.badge.orgID = orgID._id
+
+    let org = jwt.decode(req.body.user)
+    req.body.badge.orgID = org._id
     let badge = new Badges (req.body.badge);
     badge.save()
       .then(() => {
         res.status(200).send({
-          message: "Succesfully added!"
+          message: 'Succesfully added!'
         });
       })
       .catch((err) => {
@@ -89,24 +89,62 @@ orgRoute.route('/orgsignup').post((req, res) => {
   });
 
 
-  orgRoute.route("/badges-org").post((req, res) => {
-    console.log('test')
-    console.log(jwt.decode(req.body.data))
-    // async function getOrgBadges() {
+  orgRoute.route('/badges-org').post((req, res) => {
+    let org = jwt.decode(req.body.data);
+    Badges.find({orgID:org._id})
+    .then((doc) => {
+      console.log(doc)
+      res.end()
+    })
+    .catch(err => {
+      console.log(err)
+      res.end()
+    }) 
+  });
+
+  orgRoute.route("/pendingbadges").post((req, res) => {
+    console.log('this is the pending badge')
+    let org = jwt.decode(req.body.data)
+    Badges.find({orgID:org._id,granted: false})
+    .then((doc) => {
+      console.log('not granted')
+      console.log(doc)
+      res.end()
+    })
+    .catch(err =>{
+      console.log(err)
+      res.end()
+    })
+    // async function getPendingBadges() {
     //   var user = jwt.decode(req.body.data);
+    //   var org = await orgInfo(user.username);
     //   try {
-    //     var org = await orgInfo(user.username);
+    //     var badges = org.data.badges;
+    //     var pendingbadges = [];
+    //     badges.forEach(function (badge) {
+    //       if (!badge.granted) {
+    //         var recipient = [];
+    //         badge.recipient.forEach(function (re) {
+    //           recipient.push({ username: re.username, fullname: re.fullname });
+    //         })
+    //         badge.recipient = recipient;
+    //         // console.log(recipient);
+    //         // console.log(badge);
+    //         pendingbadges.push(badge);
+    //       }
+    //     });
+    //     console.log("THE ORG HAS " + pendingbadges.length + " PENDING BADGES")
     //     res.status(200).json({
-    //       badges: org.data.badges
+    //       badges: pendingbadges
     //     })
     //   } catch(err) {
     //     res.status(500).json({
-    //       message: "an error has occured!"
+    //       message: "unexpected error occured!"
     //     })
     //   }
     // }
-    // getOrgBadges();
-  });
+    // getPendingBadges();
+  })
 
   
 

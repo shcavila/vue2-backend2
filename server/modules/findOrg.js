@@ -6,9 +6,7 @@ module.exports.findOrg = async function (username) {
   try {
     var status = await user.findUser(username);
     return new Promise(function (resolve, reject) {
-      console.log("result from user: " + status.data);
       if (status.data == "not found") {
-        console.log("FINDING IN ORGANIZATION COLLECTION");
         Organization.findOne({
           username: username
         })

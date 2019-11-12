@@ -37,21 +37,6 @@ var orgSchema = new mongoose.Schema({
     required: true,
     unique: false,
   },
-  badges: [{
-    granted: Boolean,
-    code: { type: String, unique: true, sparse: true },
-    badgename: String,
-    venue: String,
-    recipient: [{ username: String, fullname: String }],
-    certificateName: String,
-    descriptions: String,
-    organization: String,
-    date: {
-      month: String,
-      day: Number,
-      year: Number,
-    }
-  }],
   post: {
     type: String,
     required: false,

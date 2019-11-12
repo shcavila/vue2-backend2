@@ -340,7 +340,7 @@ function getBadges(username) {
 }
  
 
-//done
+
 userRoute.route("/userbadges").post((req, res) => {
   async function getUserBadges() {
     var user = jwt.decode(req.body.user);
@@ -438,6 +438,8 @@ userRoute.route("/fullsignup").post((req, res) => {
   tempdata = {};
 })
  
+
+//done
  
 //ORGANIZATION SIGN UP
 userRoute.route("/orgsignup").post((req, res) => {

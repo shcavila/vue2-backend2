@@ -14,7 +14,7 @@ const url = 'mongodb+srv://badgebookdb:badgebookdb2019@cluster0-pn3a6.mongodb.ne
 mongoose.set('useCreateIndex', true);
 
 mongoose
-    .connect(url, {
+    .connect(config.DB, {
         useUnifiedTopology: true,
         useNewUrlParser: true,
     })

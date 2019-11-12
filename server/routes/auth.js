@@ -14,6 +14,7 @@ authRoute.route('/login').post(function (req, res) {
   async function getResult() {
     try {
       var fuser = await Org.findOrg(req.body.username);
+      console.log(fuser)
       if (fuser != 'not found') {
         bcrypt.compare(req.body.password, fuser.data.password)
           .then(match => {
@@ -59,11 +60,11 @@ authRoute.route('/login').post(function (req, res) {
 
 authRoute.route('/userInfo').post((req, res) => {
   var user = jwt.decode(req.body.data);
+  console.log(user)
   getResult();
   async function getResult() {
     try {
       var result = await Org.findOrg(user._id);
-      console.log(result);
       if (result.data != 'not found' || result.data == undefined) {
         res.status(200).json({
           data: result.data
@@ -77,7 +78,6 @@ authRoute.route('/userInfo').post((req, res) => {
       res.status(500).json({
         message: 'Unexpected error occured!'
       });
-      console.log(err);
     }
   }
 });

@@ -27,7 +27,7 @@ userRoute.route('/fullsignup').post((req, res) => {
         user.save()
           .then(() => {
             var token = jwt.sign({
-              _id: user._id,
+              _id: user.username,
               type: user.type
             }, config.secret, {
               expiresIn: 86400

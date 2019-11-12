@@ -56,7 +56,6 @@ authRoute.route('/login').post(function (req, res) {
   }
 });
 
-
 authRoute.route('/userInfo').post((req, res) => {
   var user = jwt.decode(req.body.data);
   getResult();

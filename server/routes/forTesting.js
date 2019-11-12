@@ -294,7 +294,7 @@ userRoute.route("/certify").post((req, res) => {
 //   })
 // }
  
- 
+ //working
 userRoute.route('/addrecipient').post((req, res) => {
   async function add() {
     var data = req.body;
@@ -496,7 +496,7 @@ function orgInfo(username) {
 }
  
  
- 
+ //done
 userRoute.route("/offerbadge").post((req, res) => {
   async function offer() {
     var org = jwt.decode(req.body.user);
@@ -570,46 +570,27 @@ userRoute.route("/pendingbadges").post((req, res) => {
   getPendingBadges();
 })
  
+
+//done 
+// userRoute.route("/validatecode").post((req, res) => {
  
-function findSameCode(bcode) {
-  return new Promise(function(resolve, reject) {
-    console.log("finding in record in org with the code======> " + bcode);
-    Organization.findOne({
-      badges: { $elemMatch: { code: bcode, granted: false} },
-    }, 'badges').then((doc) => {
-      if (doc) {
-        console.log(doc.badges)
-        console.log(doc.badges.length + " data found........");
-        resolve("Taken");
-      } else {
-        resolve("notTaken");
-      }
-    }).catch((err) => {
-      reject(err);
-      console.log(err);
-    })
-  })
-}
- 
-userRoute.route("/validatecode").post((req, res) => {
- 
-  async function checkCode() {
-    var status = await findSameCode(req.body.code);
-    console.log("RESULT FROM ORG COLLECTIN: " + status);
-    if (status == "notTaken") {
-      console.log("THE CODE " + req.body.code + "IS NOT YET TAKEN!");
-      res.status(200).json({
-        message: "Ok"
-      })
-    } else {
-      console.log("THE CODE " + req.body.code + "IS ALREADY TAKEN!");
-      res.status(400).json({
-        message: "Code is taken, regenerate new!"
-      })
-    }
-  }
-  checkCode();
-})
+//   async function checkCode() {
+//     var status = await findSameCode(req.body.code);
+//     console.log("RESULT FROM ORG COLLECTIN: " + status);
+//     if (status == "notTaken") {
+//       console.log("THE CODE " + req.body.code + "IS NOT YET TAKEN!");
+//       res.status(200).json({
+//         message: "Ok"
+//       })
+//     } else {
+//       console.log("THE CODE " + req.body.code + "IS ALREADY TAKEN!");
+//       res.status(400).json({
+//         message: "Code is taken, regenerate new!"
+//       })
+//     }
+//   }
+//   checkCode();
+// })
  
  
 //========================================================================================================

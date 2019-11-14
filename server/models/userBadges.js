@@ -5,13 +5,17 @@ var userBadgesSchema = new mongoose.Schema({
       type: Object,
       required: true,
     },
-    bagdeID: {
+    badgeID: {
       type: Object,
       required: true,
     },
     status: {
       type: Boolean,
       required: true,
+    },
+    date:{
+      type:Date,
+      default: Date.now()
     }
 })
 

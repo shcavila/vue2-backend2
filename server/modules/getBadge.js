@@ -1,10 +1,12 @@
-module.exports.getBadges = function (username) {
+const Badges = require('../models/Badges')
+
+module.exports.getBadge = function (code) {
     return new Promise(function (resolve, reject) {
-        Organization.find({}, "badges").then(docs => {
-            resolve(docs);
+        Badges.findOne({code:code}).then(doc => {
+            resolve(doc);
         }).catch(err => {
             console.log(err);
-            reject(error);
+            reject(err);
         });
     });
 }

@@ -187,6 +187,8 @@ function addAndAvailBadge(data, User) {
       })
   })
 }
+
+//done
  
 userRoute.route("/availbadge").post((req, res) => {
   async function avail() {
@@ -294,6 +296,8 @@ userRoute.route("/certify").post((req, res) => {
 //   })
 // }
  
+
+//done
  
 userRoute.route('/addrecipient').post((req, res) => {
   async function add() {
@@ -572,7 +576,7 @@ userRoute.route("/pendingbadges").post((req, res) => {
   getPendingBadges();
 })
  
- 
+ //done
 function findSameCode(bcode) {
   return new Promise(function(resolve, reject) {
     console.log("finding in record in org with the code======> " + bcode);

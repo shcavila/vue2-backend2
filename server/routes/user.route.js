@@ -6,6 +6,7 @@ const Org = require('../modules/findOrg');
 const config = require('./config');
 const User = require('../models/regUser');
 const Badge = require('../modules/Badge');
+const userBadges = require('../models/userBadges');
 var tempdata = {};
 
 userRoute.route('/signup').post((req, res) => {
@@ -58,34 +59,42 @@ userRoute.route('/fullsignup').post((req, res) => {
 });
 
 userRoute.route('/userbadges').post((req, res) => {
-  console.log('hello');
+  var user = jwt.decode(req.body.user);
+  userBadges.find({userID: user._id,status: true})
+  .then((doc) =>{
+    console.log(doc)
+  })
+  .catch(err =>{
+    console.log(err)
+  })
+  // console.log('hello');
 
-   async function getUserBadges() {
-     var user = jwt.decode(req.body.user);
-    try {
-      var result = await Badge.getBadges(user._id);
-      var badges = [];
-      console.log('query result');
-      console.log(result);
-      result.forEach(function (b) {
-        b.badges.forEach(function (bdg) {
-          bdg.recipient.forEach(function (re) {
-            if (re.username == user.username) {
-              badges.push(bdg);
-            }
-          });
-        });
-      });
-      res.status(200).json({
-        badges: badges
-      });
-    } catch (err) {
-      res.status(500).json({
-        message: err
-      });
-    }
-  }
-  getUserBadges();
+  //  async function getUserBadges() {
+  //    var user = jwt.decode(req.body.user);
+  //   try {
+  //     var result = await Badge.getBadges(user._id);
+  //     var badges = [];
+  //     console.log('query result');
+  //     console.log(result);
+  //     result.forEach(function (b) {
+  //       b.badges.forEach(function (bdg) {
+  //         bdg.recipient.forEach(function (re) {
+  //           if (re.username == user.username) {
+  //             badges.push(bdg);
+  //           }
+  //         });
+  //       });
+  //     });
+  //     res.status(200).json({
+  //       badges: badges
+  //     });
+  //   } catch (err) {
+  //     res.status(500).json({
+  //       message: err
+  //     });
+  //   }
+  // }
+  // getUserBadges();
   
 });
   

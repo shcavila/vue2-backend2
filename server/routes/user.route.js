@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const Org = require('../modules/findOrg');
 const config = require('./config');
 const User = require('../models/regUser');
-const Badge = require('../modules/Badge');
+const Badges = require('../models/Badges');
 const userBadges = require('../models/userBadges');
 var tempdata = {};
 
@@ -63,39 +63,45 @@ userRoute.route('/userbadges').post((req, res) => {
   userBadges.find({userID: user._id,status: true})
   .then((doc) =>{
     console.log(doc)
+    res.status(200).json(doc)
   })
   .catch(err =>{
     console.log(err)
+    res.status(400).json({err:err.message})
   })
-  // console.log('hello');
 
-  //  async function getUserBadges() {
-  //    var user = jwt.decode(req.body.user);
-  //   try {
-  //     var result = await Badge.getBadges(user._id);
-  //     var badges = [];
-  //     console.log('query result');
-  //     console.log(result);
-  //     result.forEach(function (b) {
-  //       b.badges.forEach(function (bdg) {
-  //         bdg.recipient.forEach(function (re) {
-  //           if (re.username == user.username) {
-  //             badges.push(bdg);
-  //           }
-  //         });
-  //       });
-  //     });
-  //     res.status(200).json({
-  //       badges: badges
-  //     });
-  //   } catch (err) {
-  //     res.status(500).json({
-  //       message: err
-  //     });
-  //   }
-  // }
-  // getUserBadges();
-  
+});
+
+userRoute.route('/availbadge').post((req, res) => {
+  var user = jwt.decode(req.body.credentials)
+  Badges.findOne({ code: req.body.code })
+    .then((badgesData) => {
+      let badgeId = badgesData._id;
+      let datum = { userID: user._id, badgeID: badgeId, status: false }
+      console.log(datum)
+      userBadges.findOne(datum)
+        .then((doc) => {
+          if (!doc) {
+            let badgeSave = new userBadges(datum)
+            badgeSave.save()
+              .then((data) => {
+                console.log("Availed Succesfully!")
+                console.log(data)
+                res.status(200).send()
+              })
+              .catch((err) => {
+                console.log(err)
+                res.status(400).send()
+              })
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    })
+    .catch((err) => {
+      console.log(err)
+    });
 });
   
 

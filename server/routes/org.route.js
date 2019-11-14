@@ -13,8 +13,6 @@ const badgeInfo = require('../modules/getBadge')
 const userBadges = require('../models/userBadges')
 
 
-
-
 orgRoute.route('/orgsignup').post((req, res) => {
   console.log(req.body)
 
@@ -28,7 +26,7 @@ orgRoute.route('/orgsignup').post((req, res) => {
         org.save()
           .then(() => {
             var token = jwt.sign({
-              orgname: org._id,
+              _id: org._id,
               type: org.type
             }, config.secret, {
               expiresIn: 86400

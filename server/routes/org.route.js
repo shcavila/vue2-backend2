@@ -7,8 +7,10 @@ const config = require('./config');
 const jwt = require('jsonwebtoken');
 const orgInfo = require('../modules/orgInfo');
 const userFind = require('../modules/findUser');
+const badgeGrant = require('../modules/updateBadgeGrant');
 const Code = require('../modules/checkCode')
 const Badges = require('../models/badges');
+const userBadges = require('../models/userBadges');
 
 
 orgRoute.route('/orgsignup').post((req, res) => {
@@ -53,8 +55,8 @@ orgRoute.route('/orgsignup').post((req, res) => {
 orgRoute.route('/offerbadge').post((req, res) => {
   orgID = jwt.decode(req.body.user)
   req.body.badge.orgID = orgID._id
- console.log(req.body)
-  let badge = new Badges (req.body.badge);
+  console.log(req.body)
+  let badge = new Badges(req.body.badge);
   badge.save()
     .then(() => {
       res.status(200).send({
@@ -88,7 +90,7 @@ orgRoute.route('/validatecode').post((req, res) => {
 })
 
 orgRoute.route('/addrecipient').post((req, res) => {
-  console.log("Add Recepient!" )
+  console.log("Add Recepient!")
   orgID = jwt.decode(req.body.org)
   console.log(req.body)
   console.log(orgID)
@@ -108,23 +110,41 @@ orgRoute.route('/addrecipient').post((req, res) => {
           res.status(500).json({ message: "Unexpected error occured" });
         } else {
           console.log("Badge not found!");
-          res.status(404).json({message: "Badge not found"});
+          res.status(404).json({ message: "Badge not found" });
         }
       } else if (User == "not found") {
         res.status(404).json({ message: "User not found!" });
       }
-        
-    } catch(err) {
+
+    } catch (err) {
       console.log("ERRROR IN ADDING!!")
       res.status(500).json({ message: "Unexpected error occured" });
     }
-    
+
   }
   add();
 })
 
-
-
+orgRoute.route("/certify").post((req, res) => {
+  async function run() {
+    try {
+      let badgeInfo = await badgeGrant.getBadge('kyortv2')
+      console.log(badgeInfo)
+      userBadges.updateMany({ badgeID: 'badgeInfo._id' }, { status: truasdfasde })
+        .then((doc) => {
+          console.log("test");
+          console.log(doc)
+        })
+        .catch((err) => {
+          console.log("Err::>>>>> " + err)
+        })
+    } catch (err) {
+      console.log("Err::>>>>> " + err)
+    }
+  }
+  //console.log(req.body.badgeInfo)
+  run();
+})
 
 
 module.exports = orgRoute;

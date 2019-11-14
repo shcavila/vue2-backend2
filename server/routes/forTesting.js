@@ -187,7 +187,8 @@ function addAndAvailBadge(data, User) {
       })
   })
 }
- 
+
+//done. Please check :) for respose and if nasayop po. Scared
 userRoute.route("/availbadge").post((req, res) => {
   async function avail() {
     var data = req.body;

@@ -6,6 +6,8 @@ const Org = require('../modules/findOrg');
 const config = require('./config');
 const User = require('../models/regUser');
 const Badge = require('../modules/Badge');
+const Badges = require('../models/badges');
+const UserBadges = require('../models/userBadges');
 var tempdata = {};
 
 userRoute.route('/signup').post((req, res) => {
@@ -58,10 +60,8 @@ userRoute.route('/fullsignup').post((req, res) => {
 });
 
 userRoute.route('/userbadges').post((req, res) => {
-  console.log('hello');
-
-   async function getUserBadges() {
-     var user = jwt.decode(req.body.user);
+  async function getUserBadges() {
+    var user = jwt.decode(req.body.user);
     try {
       var result = await Badge.getBadges(user._id);
       var badges = [];
@@ -86,56 +86,37 @@ userRoute.route('/userbadges').post((req, res) => {
     }
   }
   getUserBadges();
-  
 });
-  
 
-
-// userRoute.route('/availbadge').post((req, res) => {
-//   async function avail() {
-//     var data = req.body;
-//     var User = jwt.decode(data.credentials);
-//     try {
-//       var userinfo = await findUser(User.username);
-//       if (userinfo != 'not found') {
-//         try {
-//           var result = await Badge.addAndAvailBadge(data, userinfo);
-//           if (result == 'Successful') {
-//             console.log('You successfully availed the badge with the code' + data.code)
-//             res.status(200).json({
-//               message: 'You successfully availed the badge with the code' + data.code
-//             });
-//           } else if (result == 'Badge is not found') {
-//             console.log('Cannot find badge with the code ' + data.code)
-//             res.status(404).json({
-//               message: 'Cannot find badge with the code ' + data.code
-//             });
-//           } else if (result == 'User already exist in the list') {
-//             console.log('You are already in the list!')
-//             res.status(400).json({
-//               message: 'You are already in the list!'
-//             });
-//           }
-//         } catch (err) {
-//           res.status(500).json({
-//             message: 'Unexpected error occured!'
-//           });
-//         }
-//       } else {
-//         res.status(200).json({
-//           message: 'User not found!'
-//         });
-//       }
-//     } catch (err) {
-//       console.log('Error occured!!!');
-//       res.status(500).json({
-//         message: 'Unexpected error occured'
-//       });
-//     }
-//   }
-//   avail();
-
-// });
+userRoute.route('/availbadge').post((req, res) => {
+  var user = jwt.decode(req.body.credentials)
+  Badges.findOne({ code: req.body.code })
+    .then((badgesData) => {
+      let badgeId = badgesData._id;
+      let datum = { userID: user._id, badgeID: badgeId, status: false }
+      console.log(datum)
+      UserBadges.findOne(datum)
+        .then((doc) => {
+          if (!doc) {
+            let badgeSave = new UserBadges(datum)
+            badgeSave.save()
+              .then((data) => {
+                console.log("Availed Succesfully!")
+                console.log(data)
+              })
+              .catch((err) => {
+                console.log(err)
+              })
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+    })
+    .catch((err) => {
+      console.log(err)
+    });
+});
 
 
 

@@ -4,17 +4,19 @@ var BadgeSchema = new mongoose.Schema({
     orgID: {
         type: Object,
         required: true,
-        unique: true,
     },
     code: {
         type: String,
         required: true,
         unique: true,
     },
+    grant: {
+        type: Boolean,
+        required: true
+    },
     badgename: {
         type: String,
         required: true,
-
     },
     venue: {
         type: String,

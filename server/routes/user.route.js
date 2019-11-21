@@ -7,7 +7,7 @@ const config = require('./config');
 const User = require('../models/regUser');
 const Badges = require('../models/Badges');
 const userBadges = require('../models/userBadges');
-const Badges = require('../models/Badges')
+//const Badges = require('../models/Badges')
 var tempdata = {};
 
 userRoute.route('/signup').post((req, res) => {
@@ -65,7 +65,6 @@ userRoute.route('/userbadges').post((req, res) => {
   .then((doc) =>{
     console.log('to be send')
     console.log(doc)
-<<<<<<< HEAD
     res.json({badges:doc[0]})
   })
   .catch(err =>{
@@ -73,47 +72,6 @@ userRoute.route('/userbadges').post((req, res) => {
     res.send(err)
   });
   
-=======
-    res.status(200).json(doc)
-  })
-  .catch(err =>{
-    console.log(err)
-    res.status(400).json({err:err.message})
-  })
-
-});
-
-userRoute.route('/availbadge').post((req, res) => {
-  var user = jwt.decode(req.body.credentials)
-  Badges.findOne({ code: req.body.code })
-    .then((badgesData) => {
-      let badgeId = badgesData._id;
-      let datum = { userID: user._id, badgeID: badgeId, status: false }
-      console.log(datum)
-      userBadges.findOne(datum)
-        .then((doc) => {
-          if (!doc) {
-            let badgeSave = new userBadges(datum)
-            badgeSave.save()
-              .then((data) => {
-                console.log("Availed Succesfully!")
-                console.log(data)
-                res.status(200).send()
-              })
-              .catch((err) => {
-                console.log(err)
-                res.status(400).send()
-              })
-          }
-        })
-        .catch((err) => {
-          console.log(err)
-        })
-    })
-    .catch((err) => {
-      console.log(err)
-    });
->>>>>>> ac00b0783bf94b7a6c81a89f705999d607383e58
 });
 
 

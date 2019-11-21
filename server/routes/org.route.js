@@ -108,21 +108,22 @@ orgRoute.route("/pendingbadges").post((req, res) => {
   let org = jwt.decode(req.body.data)
   Badges.find({ orgID: org._id, granted: false })
     .then((doc) => {
-      console.log('not granted')
       console.log(doc)
-      res.end()
+      res.json({badges:doc})
     })
     .catch(err => {
       console.log(err)
-      res.end()
+      res.status(500).json({message:err.message})
     });
 });
 
 orgRoute.route('/addrecipient').post((req, res) => {
+  console.log('add reciepient')
   getResult();
   async function getResult() {
     try {
       let result = await checkuser.findUser(req.body.username);
+      console.log(result)
       let badge = await badgeInfo.getBadge(req.body.code);
       let badgeResult = await getBadge.findBadge(result._id,badge._id);
       if (result.data != 'not found' || result.data == undefined) {
@@ -139,6 +140,7 @@ orgRoute.route('/addrecipient').post((req, res) => {
           })
           .catch(err =>{
             res.status(400).json({err: err.message})
+            console.log(err)
           })
         }
       }

@@ -46,6 +46,7 @@ app.use(cors());
 
 
 app.post('/org/offerbadge', upload.single('img'), (req, res, next) => {
+    console.log(req.file.path)
     let user = jwt.decode(req.body.user)
     let date ={
         month : req.body.month,
@@ -83,7 +84,7 @@ app.use('/user', userRoute);
 app.use('/org', orgRoute);
 
 app.get('/', (req, res) => {
-    res.send('hello')
+   res.sendFile('img-1574323573523.jpg', {root: __dirname+'/uploads'})
 });
 
 app.listen(process.env.PORT || 8081);

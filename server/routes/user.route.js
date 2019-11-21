@@ -7,6 +7,7 @@ const config = require('./config');
 const User = require('../models/regUser');
 const Badge = require('../modules/Badge');
 const userBadges = require('../models/userBadges');
+const Badges = require('../models/Badges')
 var tempdata = {};
 
 userRoute.route('/signup').post((req, res) => {
@@ -62,89 +63,54 @@ userRoute.route('/userbadges').post((req, res) => {
   var user = jwt.decode(req.body.user);
   userBadges.find({userID: user._id,status: true})
   .then((doc) =>{
+    console.log('to be send')
     console.log(doc)
+    res.json({badges:doc[0]})
   })
   .catch(err =>{
     console.log(err)
-  })
-  // console.log('hello');
-
-  //  async function getUserBadges() {
-  //    var user = jwt.decode(req.body.user);
-  //   try {
-  //     var result = await Badge.getBadges(user._id);
-  //     var badges = [];
-  //     console.log('query result');
-  //     console.log(result);
-  //     result.forEach(function (b) {
-  //       b.badges.forEach(function (bdg) {
-  //         bdg.recipient.forEach(function (re) {
-  //           if (re.username == user.username) {
-  //             badges.push(bdg);
-  //           }
-  //         });
-  //       });
-  //     });
-  //     res.status(200).json({
-  //       badges: badges
-  //     });
-  //   } catch (err) {
-  //     res.status(500).json({
-  //       message: err
-  //     });
-  //   }
-  // }
-  // getUserBadges();
+    res.send(err)
+  });
   
 });
-  
 
 
-// userRoute.route('/availbadge').post((req, res) => {
-//   async function avail() {
-//     var data = req.body;
-//     var User = jwt.decode(data.credentials);
-//     try {
-//       var userinfo = await findUser(User.username);
-//       if (userinfo != 'not found') {
-//         try {
-//           var result = await Badge.addAndAvailBadge(data, userinfo);
-//           if (result == 'Successful') {
-//             console.log('You successfully availed the badge with the code' + data.code)
-//             res.status(200).json({
-//               message: 'You successfully availed the badge with the code' + data.code
-//             });
-//           } else if (result == 'Badge is not found') {
-//             console.log('Cannot find badge with the code ' + data.code)
-//             res.status(404).json({
-//               message: 'Cannot find badge with the code ' + data.code
-//             });
-//           } else if (result == 'User already exist in the list') {
-//             console.log('You are already in the list!')
-//             res.status(400).json({
-//               message: 'You are already in the list!'
-//             });
-//           }
-//         } catch (err) {
-//           res.status(500).json({
-//             message: 'Unexpected error occured!'
-//           });
-//         }
-//       } else {
-//         res.status(200).json({
-//           message: 'User not found!'
-//         });
-//       }
-//     } catch (err) {
-//       console.log('Error occured!!!');
-//       res.status(500).json({
-//         message: 'Unexpected error occured'
-//       });
-//     }
-//   }
-//   avail();
-
-// });
+userRoute.route('/availbadge').post((req, res) => {
+  console.log('test')
+  var user = jwt.decode(req.body.credentials)
+  Badges.findOne({ code: req.body.code })
+    .then((badgesData) => {
+      let badgeId = badgesData._id;
+      let datum = { userID: user._id, badgeID: badgeId, status: true }
+      console.log(datum)
+      userBadges.findOne(datum)
+        .then((doc) => {
+          if (!doc) {
+            let badgeSave = new userBadges(datum)
+            badgeSave.save()
+              .then((data) => {
+                console.log("Availed Succesfully!")
+                console.log(data)
+               res.end()
+              })
+              .catch((err) => {
+                res.send(err)
+              })
+          }
+          else{
+            res.send('not found')
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
+        res.end()
+    })
+    .catch((err) => {
+      console.log(err)
+      res.end()
+    });
+});
 
 
 

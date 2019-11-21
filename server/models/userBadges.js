@@ -19,4 +19,4 @@ var userBadgesSchema = new mongoose.Schema({
     }
 })
 
-module.exports = mongoose.model('userBadged', userBadgesSchema);
+module.exports = mongoose.model('userBadge', userBadgesSchema);

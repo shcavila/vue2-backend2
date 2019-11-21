@@ -74,22 +74,22 @@ orgRoute.route('/validatecode').post((req, res) => {
 
 });
 
-orgRoute.route('/offerbadge').post((req, res) => {
+// orgRoute.route('/offerbadge').post((req, res) => {
 
-  let org = jwt.decode(req.body.user)
-  req.body.badge.orgID = org._id
-  let badge = new Badges(req.body.badge);
-  badge.save()
-    .then(() => {
-      res.status(200).send({
-        message: 'Succesfully added!'
-      });
-    })
-    .catch((err) => {
-      res.status(400).json({ err: err.message });
-      console.log(err)
-    })
-});
+//   let org = jwt.decode(req.body.user)
+//   req.body.badge.orgID = org._id
+//   let badge = new Badges(req.body.badge);
+//   badge.save()
+//     .then(() => {
+//       res.status(200).send({
+//         message: 'Succesfully added!'
+//       });
+//     })
+//     .catch((err) => {
+//       res.status(400).json({ err: err.message });
+//       console.log(err)
+//     })
+// });
 
 
 orgRoute.route('/badges-org').post((req, res) => {

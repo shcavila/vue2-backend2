@@ -30,7 +30,11 @@ var BadgeSchema = new mongoose.Schema({
       type: Boolean,
       required:true
     },
-    date:{month: String, day: Number, year: Number}
+    date:{month: String, day: Number, year: Number},
+    backgroundImg:{
+      type:String,
+      required:false
+    }
     
     
   });

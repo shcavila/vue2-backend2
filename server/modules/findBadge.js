@@ -10,9 +10,11 @@ module.exports.findBadge = function(userID, badgeID) {
       })
         .then(doc => {
           if (doc) {
+            console.log('this is the info')
+            console.log(doc)
             resolve({data:doc});
           } else {
-            resolve({data:"not found"})
+            resolve({data:"not found"});
           }
         }).catch(err => {
           reject(err);

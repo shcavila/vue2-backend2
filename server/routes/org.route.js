@@ -5,17 +5,15 @@ const Organization = require('../models/organization');
 const bcrypt = require('bcryptjs');
 const config = require('./config');
 const jwt = require('jsonwebtoken');
-const Code = require('../modules/checkCode')
-const Badges = require('../models/Badges')
-const checkuser = require('../modules/findUser')
-const getBadge = require('../modules/findBadge')
-const badgeInfo = require('../modules/getBadge')
-const userBadges = require('../models/userBadges')
+const Code = require('../modules/checkCode');
+const Badges = require('../models/Badges');
+const checkuser = require('../modules/findUser');
+const getBadge = require('../modules/findBadge');
+const badgeInfo = require('../modules/getBadge');
+const userBadges = require('../models/userBadges');
 
 
 orgRoute.route('/orgsignup').post((req, res) => {
-  console.log(req.body)
-
   getResult();
   async function getResult() {
     try {
@@ -37,17 +35,21 @@ orgRoute.route('/orgsignup').post((req, res) => {
             });
           })
           .catch((err) => {
-            res.status(400).json({ err: err.message });
-            console.log(err)
-          })
-      }
-      else {
-        res.status(400).json({ message: 'orgname is already taken!' });
-        console.log('exist')
+            res.status(400).json({
+              err: err.message
+            });
+          });
+      } else {
+        res.status(400).json({
+          message: 'orgname is already taken!'
+        });
+        console.log('exist');
       }
     } catch (err) {
-      res.status(500).json({ message: 'Unexpected error occured!' });
-      console.log(err)
+      res.status(500).json({
+        message: 'Unexpected error occured!'
+      });
+      console.log(err);
     }
   }
   tempdata = {};
@@ -61,105 +63,164 @@ orgRoute.route('/validatecode').post((req, res) => {
     if (status == 'notTaken') {
       res.status(200).json({
         message: 'Ok'
-      })
+      });
     } else {
       res.status(400).json({
         message: 'Code is taken, regenerate new!'
-      })
+      });
     }
   }
   checkCode();
 
 });
 
-// orgRoute.route('/offerbadge').post((req, res) => {
-
-//   let org = jwt.decode(req.body.user)
-//   req.body.badge.orgID = org._id
-//   let badge = new Badges(req.body.badge);
-//   badge.save()
-//     .then(() => {
-//       res.status(200).send({
-//         message: 'Succesfully added!'
-//       });
-//     })
-//     .catch((err) => {
-//       res.status(400).json({ err: err.message });
-//       console.log(err)
-//     })
-// });
-
-
 orgRoute.route('/badges-org').post((req, res) => {
+  console.log('request from the org')
   let org = jwt.decode(req.body.data);
-  Badges.find({ orgID: org._id })
+  Badges.find({
+      orgID: org._id,
+      granted: true
+    })
     .then((doc) => {
-      console.log(doc)
-      res.end()
+      if (doc) {
+        res.json({
+          badges: doc
+        });
+        console.log(doc)
+      };
     })
     .catch(err => {
-      console.log(err)
-      res.end()
-    })
-});
-
-orgRoute.route("/pendingbadges").post((req, res) => {
-  console.log('this is the pending badge')
-  let org = jwt.decode(req.body.data)
-  Badges.find({ orgID: org._id, granted: false })
-    .then((doc) => {
-      console.log(doc)
-      res.json({badges:doc})
-    })
-    .catch(err => {
-      console.log(err)
-      res.status(500).json({message:err.message})
+      res.send(err);
     });
 });
 
+orgRoute.route('/offerbadge').post((req, res) => {
+  let filename;
+  if (req.file == undefined) {
+    filename = 'default.jpg';
+  } else {
+    filename = req.file.filename;
+  }
+  let user = jwt.decode(req.body.user);
+  let date = {
+    month: req.body.month,
+    day: req.body.day,
+    year: req.body.year
+  };
+  let badgeData = {
+    date: date,
+    granted: req.body.granted,
+    code: req.body.code,
+    badgename: req.body.badgename,
+    venue: req.body.venue,
+    recipient: req.body.recipient,
+    certificateName: req.body.certificateName,
+    descriptions: req.body.descriptions,
+    backgroundImg: filename,
+    orgID: user._id
+  };
+  let badges = new Badges(badgeData);
+  badges.save()
+    .then(() => {
+      res.json({
+        data: "Successfull"
+      });
+      console.log('saved')
+    }).catch((err) => {
+      res.status(400).json({
+        err: err.message
+      })
+      console.log(err);
+    });
+});
+
+
 orgRoute.route('/addrecipient').post((req, res) => {
-  console.log('add reciepient')
   getResult();
   async function getResult() {
     try {
       let result = await checkuser.findUser(req.body.username);
-      console.log(result)
       let badge = await badgeInfo.getBadge(req.body.code);
-      let badgeResult = await getBadge.findBadge(result._id,badge._id);
+      let badgeResult = await getBadge.findBadge(result.data._id, badge._id);
       if (result.data != 'not found' || result.data == undefined) {
-        if(badgeResult.data == 'not found'){
+        if (badgeResult.data == 'not found') {
           let data = {
-            userID : result.data._id,
-            badgeID : badge._id,
+            userID: result.data._id,
+            badgeID: badge._id,
             status: false
-          }
-          let newBadge = new userBadges(data)
+          };
+          let newBadge = new userBadges(data);
           newBadge.save()
-          .then(() =>{
-            res.json({message:'Successfully added'})
-          })
-          .catch(err =>{
-            res.status(400).json({err: err.message})
-            console.log(err)
+            .then(() => {
+              res.json({
+                badges: req.body.username
+              });
+            })
+            .catch(err => {
+              res.status(400).json({
+                err: err.message
+              });
+              console.log(err);
+            });
+
+        } else {
+          res.status(400).json({
+            err: 'already added'
           })
         }
-      }
-      else {
-        res.status(400).json({ message: 'not found' });
+      } else {
+        res.status(400).json({
+          message: 'not found'
+        });
       }
     } catch (err) {
-      res.status(500).json({ message: 'Unexpected error occured!' });
-      console.log(err)
+      res.status(500).json({
+        message: 'Unexpected error occured!'
+      });
+      console.log(err);
     }
   }
 
 });
 
+orgRoute.route("/pendingbadges").post((req, res) => {
+  let org = jwt.decode(req.body.data);
+  Badges.find({
+      orgID: org._id,
+      granted: false
+    })
+    .then((doc) => {
+      if (doc) {
+        res.json({
+          badges: doc
+        });
+      }
+    })
+    .catch(err => {
+      res.status(500).json({
+        message: err.message
+      });
+    });
+});
+
 orgRoute.route("/certify").post((req, res) => {
   async function run() {
-    let badge = await badgeInfo.getBadge('egvm1k3')
-    const docs = await userBadges.find({badgeID: badge._id})
-    console.log(docs);
+    try {
+      let badge = await badgeInfo.getBadge(req.body.badgeInfo.code)
+      userBadges.updateMany({ badgeID: badge._id }, { status: false })
+        .then((doc) => {
+          console.log("test");
+          console.log(doc)
+          res.end()
+        })
+        .catch((err) => {
+          console.log("Err::>>>>> " + err)
+          res.end()
+        })
+    } catch (err) {
+      console.log("Err::>>>>> " + err)
+      res.end()
+    }
   }
   //console.log(req.body.badgeInfo)
   run();

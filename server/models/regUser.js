@@ -56,6 +56,10 @@ var userSchema = new mongoose.Schema({
       type: String,
       required: true,
       unique: false,
+    },
+    profile:{
+      type:String,
+      required: false
     }
     
   });

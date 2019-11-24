@@ -9,7 +9,7 @@ module.exports = {
                 Organization.find({_id:'5db7891b623a918320fad67d'},{'badges':1}).then(docs => {
                     console.log('one object');
                     console.log(docs[0].badges[0]);
-                    console.log(docs)
+                    console.log(docs);
                     resolve(docs);
                 }).catch(err => {
                     console.log(err);

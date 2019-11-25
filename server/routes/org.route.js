@@ -136,6 +136,7 @@ orgRoute.route('/offerbadge').post((req, res) => {
 
 
 orgRoute.route('/addrecipient').post((req, res) => {
+  console.log(req.body)
   getResult();
   async function getResult() {
     try {
@@ -144,6 +145,15 @@ orgRoute.route('/addrecipient').post((req, res) => {
       let badgeResult = await getBadge.findBadge(result.data._id, badge._id);
       if (result.data != 'not found' || result.data == undefined) {
         if (badgeResult.data == 'not found') {
+          let recepient =req.body.username
+          Badges.findByIdAndUpdate(badge._id,{$push:{recepients: recepient}})
+          .then(doc =>{
+            console.log('the recepient')
+            console.log(doc)
+          })
+          .catch(err =>{
+            console.log(err)
+          })
           let data = {
             userID: result.data._id,
             badgeID: badge._id,

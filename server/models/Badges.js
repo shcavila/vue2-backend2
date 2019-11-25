@@ -41,7 +41,10 @@ var BadgeSchema = new mongoose.Schema({
   backgroundImg: {
     type: String,
     required: false
-  }
+  },
+  recepients:[{
+    type: String
+  }]
 
 
 });

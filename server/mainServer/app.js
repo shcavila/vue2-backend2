@@ -45,44 +45,6 @@ app.use(bodyParser.urlencoded({
 app.use(cors());
 
 
-// app.post('/org/offerbadge', upload.single('img'), (req, res, next) => {
-//     let filename;
-//     if(req.file == undefined){
-//        filename = 'default.jpg';
-//     }else{
-//         filename = req.file.filename;
-//     }
-//     let user = jwt.decode(req.body.user);
-//     let date ={
-//         month : req.body.month,
-//         day: req.body.day,
-//         year: req.body.year
-//     }
-//     let badgeData = {
-//         date :date, 
-//         granted : req.body.granted,
-//         code: req.body.code,
-//         badgename: req.body.badgename,
-//         venue: req.body.venue,
-//         recipient: req.body.recipient,
-//         certificateName: req.body.certificateName,
-//         descriptions: req.body.descriptions,
-//         backgroundImg: filename,
-//         orgID: user._id
-//     }
-//      let badges = new Badges(badgeData );
-//     badges.save()
-
-//     .then(() => {
-//         res.json({message:"Successfull"});
-//         console.log('saved')
-//     }).catch((err) => {
-//         res.status(400).json({err:err.message})
-//         console.log(err)
-//     });
-    
-// });
-
 
 app.use('/auth', authRoute);
 app.use('/user', userRoute);

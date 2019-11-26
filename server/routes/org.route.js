@@ -12,6 +12,7 @@ const checkuser = require('../modules/findUser');
 const getBadge = require('../modules/findBadge');
 const badgeInfo = require('../modules/getBadge');
 const userBadges = require('../models/userBadges');
+const mongoose = require('mongoose')
 
 
 orgRoute.route('/orgsignup').post((req, res) => {
@@ -79,9 +80,9 @@ orgRoute.route('/badges-org').post((req, res) => {
   console.log('request from the org')
   let org = jwt.decode(req.body.data);
   Badges.find({
-      orgID: org._id,
-      granted: true
-    })
+    orgID: org._id,
+    granted: true
+  })
     .then((doc) => {
       if (doc) {
         res.json({
@@ -146,15 +147,16 @@ orgRoute.route('/addrecipient').post((req, res) => {
       let badgeResult = await getBadge.findBadge(result.data._id, badge._id);
       if (result.data != 'not found' || result.data == undefined) {
         if (badgeResult.data == 'not found') {
-          let recepient =req.body.username
-          Badges.findByIdAndUpdate(badge._id,{$push:{recepients: recepient}})
-          .then(doc =>{
-            console.log('the recepient')
-            console.log(doc)
-          })
-          .catch(err =>{
-            console.log(err)
-          })
+          let recepient = req.body.username
+          Badges.findByIdAndUpdate(badge._id, { $push: { recepients: recepient } }, { new: true })
+            .then(doc => {
+              console.log('the recepient')
+              res.json({ badges: doc })
+              console.log(doc)
+            })
+            .catch(err => {
+              console.log(err)
+            })
           let data = {
             userID: result.data._id,
             badgeID: badge._id,
@@ -163,9 +165,7 @@ orgRoute.route('/addrecipient').post((req, res) => {
           let newBadge = new userBadges(data);
           newBadge.save()
             .then(() => {
-              res.json({
-                badges: req.body.username
-              });
+             console.log('saved')
             })
             .catch(err => {
               res.status(400).json({
@@ -196,10 +196,11 @@ orgRoute.route('/addrecipient').post((req, res) => {
 
 orgRoute.route("/pendingbadges").post((req, res) => {
   let org = jwt.decode(req.body.data);
+  // socket io
   Badges.find({
-      orgID: org._id,
-      granted: false
-    })
+    orgID: org._id,
+    granted: false
+  })
     .then((doc) => {
       if (doc) {
         res.json({
@@ -215,26 +216,27 @@ orgRoute.route("/pendingbadges").post((req, res) => {
 });
 
 orgRoute.route("/certify").post((req, res) => {
-  async function run() {
-    try {
-      let badge = await badgeInfo.getBadge(req.body.badgeInfo.code)
-      userBadges.updateMany({ badgeID: badge._id }, { status: false })
-        .then((doc) => {
-          console.log("test");
-          console.log(doc)
-          res.end()
-        })
-        .catch((err) => {
-          console.log("Err::>>>>> " + err)
-          res.end()
-        })
-    } catch (err) {
-      console.log("Err::>>>>> " + err)
-      res.end()
-    }
-  }
-  //console.log(req.body.badgeInfo)
-  run();
+  console.log(req.body)
+  let id = req.body.badgeInfo.id
+  Badges.findByIdAndUpdate(mongoose.Types.ObjectId(id),{granted:true},{new:true})
+  .then(doc =>{
+    console.log(doc)
+    res.end()  
+  })
+  .catch(err =>{
+    console.log(err)
+    res.send(err)  
+  })
+  userBadges.updateMany({ badgeID: mongoose.Types.ObjectId(id) }, { status: true })
+  .then((doc) => {
+    console.log("test");
+    console.log(doc)
+    res.end()
+  })
+  .catch((err) => {
+    console.log("Err::>>>>> " + err)
+    res.end()
+  })
 })
 
 

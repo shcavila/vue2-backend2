@@ -7,6 +7,7 @@ const config = require('./config');
 const User = require('../models/regUser');
 const Badges = require('../models/Badges');
 const userBadges = require('../models/userBadges');
+const mongoose = require('mongoose')
 //const Badges = require('../models/Badges')
 var tempdata = {};
 
@@ -29,7 +30,8 @@ userRoute.route('/fullsignup').post((req, res) => {
         user.save()
           .then(() => {
             var token = jwt.sign({
-              _id: user.username,
+              username:user.username,
+              _id: user._id,
               type: user.type
             }, config.secret, {
               expiresIn: 86400
@@ -60,24 +62,28 @@ userRoute.route('/fullsignup').post((req, res) => {
 });
 
 userRoute.route('/userbadges').post((req, res) => {
-  var user = jwt.decode(req.body.user);
-  userBadges.find({userID: user._id,status: true})
-  .then((doc) =>{
-    console.log('to be send')
-    console.log(doc)
-    res.json({badges:doc[0]})
-  })
-  .catch(err =>{
-    console.log(err)
-    res.send(err)
+  let user = jwt.decode(req.body.user);
+  userBadges.find({userID: mongoose.Types.ObjectId(user._id),status: true}).
+  populate('badgeID').
+  exec(function (err, badgeID) {
+    if (err) return handleError(err);
+    //let badge = ba
+    console.log(badgeID[0]);
+    res.json(badgeID[0])
+    
+    // prints "The author is Ian Fleming"
   });
+    
+    // prints "The author is Ian Fleming"
+  
   
 });
 
 
 userRoute.route('/availbadge').post((req, res) => {
-  console.log('test')
-  var user = jwt.decode(req.body.credentials)
+  console.log(req.body)
+  var user = jwt.decode(req.body.user)
+  console.log(user)
   Badges.findOne({ code: req.body.code })
     .then((badgesData) => {
       let badgeId = badgesData._id;

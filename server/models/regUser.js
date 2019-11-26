@@ -59,7 +59,8 @@ var userSchema = new mongoose.Schema({
     },
     profile:{
       type:String,
-      required: false
+      required: true,
+      default: 'profile.png'
     }
     
   });

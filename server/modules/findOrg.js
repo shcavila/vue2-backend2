@@ -25,7 +25,7 @@ module.exports.findOrg = async function (username) {
       }
     });
   } catch (err) {
-    
+    console.log(err)
     console.log("Unexpected error occured!!!");
   }
 };

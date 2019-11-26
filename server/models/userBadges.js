@@ -5,10 +5,11 @@ var userBadgesSchema = new mongoose.Schema({
       type: Object,
       required: true,
     },
-    badgeID: {
+    badgeID: [{
       type: Object,
+      ref:'Badge',
       required: true,
-    },
+    }],
     status: {
       type: Boolean,
       required: true,

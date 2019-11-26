@@ -19,6 +19,7 @@ authRoute.route('/login').post(function (req, res) {
             if (match) {
               var token = jwt.sign({
                 _id: fuser.data._id,
+                username: fuser.data.username,
                 type: fuser.data.type,
               }, config.secret, {
                 expiresIn: 86400 // expires in 24 hours
@@ -57,12 +58,14 @@ authRoute.route('/login').post(function (req, res) {
 
 
 authRoute.route('/userInfo').post((req, res) => {
+  console.log('org')
   var user = jwt.decode(req.body.data);
   console.log(user)
+
   getResult();
   async function getResult() {
     try {
-      var result = await Org.findOrg(user._id);
+      var result = await Org.findOrg(user.username);
       if (result.data != 'not found' || result.data == undefined) {
         res.status(200).json({
           data: result.data

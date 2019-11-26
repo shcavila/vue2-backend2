@@ -7,9 +7,8 @@ const config = require('./config');
 const User = require('../models/regUser');
 const Badges = require('../models/Badges');
 const userBadges = require('../models/userBadges');
-const mongoose = require('mongoose')
-//const Badges = require('../models/Badges')
-var tempdata = {};
+const mongoose = require('mongoose');
+const badgesController = require('../controller/Badges')
 
 userRoute.route('/signup').post((req, res) => {
   tempdata = req.body;
@@ -30,12 +29,12 @@ userRoute.route('/fullsignup').post((req, res) => {
         user.save()
           .then(() => {
             var token = jwt.sign({
-              username:user.username,
+              username: user.username,
               _id: user._id,
               type: user.type
             }, config.secret, {
-              expiresIn: 86400
-            });
+                expiresIn: 86400
+              });
             res.status(200).send({
               auth: true,
               token: token
@@ -46,7 +45,6 @@ userRoute.route('/fullsignup').post((req, res) => {
             res.status(400).send(err);
           });
       } else {
-        console.log('RESPOND 400 ALREADY TAKEN')
         res.status(400).json({
           message: 'Username is already taken!'
         })
@@ -63,59 +61,60 @@ userRoute.route('/fullsignup').post((req, res) => {
 
 userRoute.route('/userbadges').post((req, res) => {
   let user = jwt.decode(req.body.user);
-  userBadges.find({userID: mongoose.Types.ObjectId(user._id),status: true}).
-  populate('badgeID').
-  exec(function (err, badgeID) {
-    if (err) return handleError(err);
-    //let badge = ba
-    console.log(badgeID[0]);
-    res.json(badgeID[0])
-    
-    // prints "The author is Ian Fleming"
-  });
-    
-    // prints "The author is Ian Fleming"
-  
-  
+  userBadges.find({ userID: mongoose.Types.ObjectId(user._id), status: true }).
+    populate('badgeID').
+    exec(function (err, badgeID) {
+      if (err) return handleError(err);
+      //let badge = ba
+      console.log(badgeID[0]);
+      res.json(badgeID[0])
+
+      // prints "The author is Ian Fleming"
+    });
+
+  // prints "The author is Ian Fleming"
+
+
 });
 
 
 userRoute.route('/availbadge').post((req, res) => {
-  console.log(req.body)
   var user = jwt.decode(req.body.user)
   console.log(user)
-  Badges.findOne({ code: req.body.code })
-    .then((badgesData) => {
-      let badgeId = badgesData._id;
-      let datum = { userID: user._id, badgeID: badgeId, status: true }
-      console.log(datum)
-      userBadges.findOne(datum)
-        .then((doc) => {
-          if (!doc) {
-            let badgeSave = new userBadges(datum)
-            badgeSave.save()
-              .then((data) => {
-                console.log("Availed Succesfully!")
-                console.log(data)
-               res.end()
-              })
-              .catch((err) => {
-                res.send(err)
-              })
-          }
-          else{
-            res.send('not found')
-          }
-        })
-        .catch((err) => {
-          console.log(err)
-        })
-        res.end()
-    })
-    .catch((err) => {
-      console.log(err)
-      res.end()
-    });
+  //async fucn
+  // Badges.findOne({ code: req.body.code })
+  //   .then((badgesData) => {
+  //     console.log(badgesData)
+  //     let badgeId = badgesData._id;
+  //     let datum = { userID: user._id, badgeID: badgeId, status: false }
+  //     userBadges.findOne(datum)
+  //       .then((doc) => {
+  //         if (!doc) {
+  //           console.log(doc)
+  //           let badgeSave = new userBadges(datum)
+  //           badgeSave.save()
+  //             .then((data) => {
+  //               console.log("Availed Succesfully!")
+  //               console.log(data)
+  //              res.json({availedBadge:data, })
+  //             })
+  //             .catch((err) => {
+  //               res.send(err)
+  //             })
+  //         }
+  //         else {
+  //           res.send('not found')
+  //           console.log(doc)
+  //         }
+  //       })
+  //       .catch((err) => {
+  //         console.log(err)
+  //       });
+  //   })
+  //   .catch((err) => {
+  //     console.log(err)
+  //     res.end()
+  //   });
 });
 
 

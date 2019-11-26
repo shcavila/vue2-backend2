@@ -99,7 +99,7 @@ orgRoute.route('/badges-org').post((req, res) => {
 orgRoute.route('/offerbadge').post((req, res) => {
   let filename;
   if (req.file == undefined) {
-    filename = 'default.jpg';
+    filename = 'certificateBG.jpg';
   } else {
     filename = req.file.filename;
   }

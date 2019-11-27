@@ -55,5 +55,11 @@ app.get('/', (req, res) => {
    res.sendFile('img-1574323573523.jpg', {root: __dirname+'/uploads'})
 });
 
-app.listen(process.env.PORT || 8081);
-console.log('app listening on post 8081');
+var port = process.env.PORT || 8081
+//app.listen(process.env.PORT || 8081);
+//console.log('app listening on post 8081');
+const server = app.listen(port, function() {
+    console.log('app listening on post:', port);
+});
+const io = require("socket.io")(server);
+app.set('socketio', io);

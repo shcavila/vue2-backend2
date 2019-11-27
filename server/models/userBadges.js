@@ -1,17 +1,17 @@
 var mongoose = require('mongoose');
 
 var userBadgesSchema = new mongoose.Schema({
-    userID: {
-      type: Object,
-      required: true,
-    },
-    badgeID: [{
+    badgeID: {
       type: Object,
       ref:'Badge',
       required: true,
-    }],
+    },
     status: {
       type: Boolean,
+      required: true,
+    },
+    userID: {
+      type: Object,
       required: true,
     },
     date:{

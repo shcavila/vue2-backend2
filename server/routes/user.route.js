@@ -47,7 +47,7 @@ userRoute.route('/fullsignup').post((req, res) => {
       } else {
         res.status(400).json({
           message: 'Username is already taken!'
-        })
+        });
       }
     } catch (err) {
       res.status(500).json({
@@ -61,60 +61,54 @@ userRoute.route('/fullsignup').post((req, res) => {
 
 userRoute.route('/userbadges').post((req, res) => {
   let user = jwt.decode(req.body.user);
-  userBadges.find({ userID: mongoose.Types.ObjectId(user._id), status: true }).
-    populate('badgeID').
+  let options = {_id:0,userID:0,date:0};
+  let select = 'badgename venue certificateName description backgroundImg orgID';
+  userBadges.find({ userID: mongoose.Types.ObjectId(user._id), status: false },options).
+    populate('badgeID',select).
     exec(function (err, badgeID) {
       if (err) return handleError(err);
-      //let badge = ba
-      console.log(badgeID[0]);
-      res.json(badgeID[0])
-
-      // prints "The author is Ian Fleming"
+      console.log(badgeID);
+      res.json(badgeID);
     });
-
-  // prints "The author is Ian Fleming"
-
-
 });
 
 
 userRoute.route('/availbadge').post((req, res) => {
   var user = jwt.decode(req.body.user)
-  console.log(user)
-  //async fucn
-  // Badges.findOne({ code: req.body.code })
-  //   .then((badgesData) => {
-  //     console.log(badgesData)
-  //     let badgeId = badgesData._id;
-  //     let datum = { userID: user._id, badgeID: badgeId, status: false }
-  //     userBadges.findOne(datum)
-  //       .then((doc) => {
-  //         if (!doc) {
-  //           console.log(doc)
-  //           let badgeSave = new userBadges(datum)
-  //           badgeSave.save()
-  //             .then((data) => {
-  //               console.log("Availed Succesfully!")
-  //               console.log(data)
-  //              res.json({availedBadge:data, })
-  //             })
-  //             .catch((err) => {
-  //               res.send(err)
-  //             })
-  //         }
-  //         else {
-  //           res.send('not found')
-  //           console.log(doc)
-  //         }
-  //       })
-  //       .catch((err) => {
-  //         console.log(err)
-  //       });
-  //   })
-  //   .catch((err) => {
-  //     console.log(err)
-  //     res.end()
-  //   });
+  Badges.findOne({ code: req.body.code })
+    .then((badgesData) => {
+      let badgeId = badgesData._id;
+      console.log('the array')
+      console.log(typeof badgesData._id)
+      let datum = { userID: mongoose.Types.ObjectId(user._id), badgeID: badgeId, status: false }
+      userBadges.findOne(datum)
+        .then((doc) => {
+          if (!doc) {
+            console.log(doc)
+            let badgeSave = new userBadges(datum)
+            badgeSave.save()
+              .then((data) => {
+                console.log("Availed Succesfully!")
+                console.log(data)
+               res.json({availedBadge:data, })
+              })
+              .catch((err) => {
+                res.send(err)
+              })
+          }
+          else {
+            res.send('not found')
+            console.log(doc)
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        });
+    })
+    .catch((err) => {
+      console.log(err)
+      res.end()
+    });
 });
 
 

@@ -12,8 +12,9 @@ const checkuser = require('../modules/findUser');
 const getBadge = require('../modules/findBadge');
 const badgeInfo = require('../modules/getBadge');
 const userBadges = require('../models/userBadges');
-const mongoose = require('mongoose')
-
+const mongoose = require('mongoose');
+const test = require('../modules/test');
+const helper = require('../controller/getPending')
 
 orgRoute.route('/orgsignup').post((req, res) => {
   getResult();
@@ -80,9 +81,9 @@ orgRoute.route('/badges-org').post((req, res) => {
   console.log('request from the org')
   let org = jwt.decode(req.body.data);
   Badges.find({
-    orgID: org._id,
-    granted: true
-  })
+      orgID: org._id,
+      granted: true
+    })
     .then((doc) => {
       if (doc) {
         res.json({
@@ -138,21 +139,38 @@ orgRoute.route('/offerbadge').post((req, res) => {
 
 
 orgRoute.route('/addrecipient').post((req, res) => {
-  console.log(req.body)
+  console.log(req.body);
   getResult();
   async function getResult() {
     try {
-      let result = await checkuser.findUser(req.body.username);
+      let projection = {
+        username: 1,
+        firstname: 1,
+        lastname: 1
+      }
+      let result = await test.findUser(req.body.username, projection);
+      console.log(result.data)
       let badge = await badgeInfo.getBadge(req.body.code);
       let badgeResult = await getBadge.findBadge(result.data._id, badge._id);
       if (result.data != 'not found' || result.data == undefined) {
         if (badgeResult.data == 'not found') {
-          let recepient = req.body.username
-          Badges.findByIdAndUpdate(badge._id, { $push: { recepients: recepient } }, { new: true })
+          let recepient = {
+            username: result.data.username,
+            fullname: `${result.data.firstname} ${result.data.lastname}`
+          }
+          Badges.findByIdAndUpdate(badge._id, {
+              $push: {
+                recepients: recepient
+              }
+            }, {
+              new: true
+            })
             .then(doc => {
               console.log('the recepient')
-              res.json({ badges: doc })
-              console.log(doc)
+              res.json({
+                badges: doc
+              })
+              console.log(doc);
             })
             .catch(err => {
               console.log(err)
@@ -165,7 +183,7 @@ orgRoute.route('/addrecipient').post((req, res) => {
           let newBadge = new userBadges(data);
           newBadge.save()
             .then(() => {
-             console.log('saved')
+              console.log('saved')
             })
             .catch(err => {
               res.status(400).json({
@@ -196,6 +214,7 @@ orgRoute.route('/addrecipient').post((req, res) => {
 
 orgRoute.route("/pendingbadges").post((req, res) => {
   let org = jwt.decode(req.body.data);
+  console.log(org)
   // socket io
   Badges.find({
     orgID: org._id,
@@ -215,28 +234,40 @@ orgRoute.route("/pendingbadges").post((req, res) => {
     });
 });
 
+// var io = req.app.get("socketio");
+//   let data = req.body;
+//   io.emit("sample", data);
+
 orgRoute.route("/certify").post((req, res) => {
   console.log(req.body)
   let id = req.body.badgeInfo.id
-  Badges.findByIdAndUpdate(mongoose.Types.ObjectId(id),{granted:true},{new:true})
-  .then(doc =>{
-    console.log(doc)
-    res.end()  
-  })
-  .catch(err =>{
-    console.log(err)
-    res.send(err)  
-  })
-  userBadges.updateMany({ badgeID: mongoose.Types.ObjectId(id) }, { status: true })
-  .then((doc) => {
-    console.log("test");
-    console.log(doc)
-    res.end()
-  })
-  .catch((err) => {
-    console.log("Err::>>>>> " + err)
-    res.end()
-  })
+  Badges.findByIdAndUpdate(mongoose.Types.ObjectId(id), {
+      granted: true
+    }, {
+      new: true
+    })
+    .then(doc => {
+      console.log(doc)
+      res.end()
+    })
+    .catch(err => {
+      console.log(err)
+      res.send(err)
+    })
+  userBadges.updateMany({
+      badgeID: mongoose.Types.ObjectId(id)
+    }, {
+      status: true
+    })
+    .then((doc) => {
+      console.log("test");
+      console.log(doc)
+      res.end()
+    })
+    .catch((err) => {
+      console.log("Err::>>>>> " + err)
+      res.end()
+    })
 })
 
 

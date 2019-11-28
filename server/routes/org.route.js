@@ -79,18 +79,20 @@ orgRoute.route('/offerbadge').post((req, res) => {
     day: req.body.day,
     year: req.body.year
   };
-  let badgeData = {
-    date: date,
-    granted: req.body.granted,
-    code: req.body.code,
-    badgename: req.body.badgename,
-    venue: req.body.venue,
-    recipient: req.body.recipient,
-    certificateName: req.body.certificateName,
-    descriptions: req.body.descriptions,
-    backgroundImg: req.file.filename,
-    orgID: user._id
-  };
+  req.body.date = date;
+//   let badgeData = {
+//     date: date,
+//     granted: req.body.granted,
+//     code: req.body.code,
+//     badgename: req.body.badgename,
+//     venue: req.body.venue,
+//     recipient: req.body.recipient,
+//     certificateName: req.body.certificateName,
+//     descriptions: req.body.descriptions,
+//     backgroundImg: req.file.filename,
+//     orgID: user._id
+//   };
+  Object.assign(req.body, { backgroundImg: req.file.filename, orgID: user._id})
 
   let badges = new Badges(badgeData);
   helper.addNewBadge(badges)
@@ -171,6 +173,26 @@ orgRoute.route("/certify").post((req, res) => {
   }, { status: true })
     .then((doc) => { res.end() })
     .catch((err) => { res.send(err) })
+})
+
+orgRoute.route('/updateOrg').post((req, res) => {
+  console.log('Organization Update Retrieve')
+  let org = jwt.decode(req.body.data)
+  Organization.findOne({ _id: org._id })
+    .then((data) => {
+      res.status(200).json(data)
+    })
+    .catch((err) => {
+      res.status(500).json({ err: err.message })
+    })
+});
+
+orgRoute.route('/saveUpdate').post((req, res) => {
+  let org = jwt.decode(req.body.org)
+  if (req.file != undefined) {
+    req.body.profilePic = req.file.filename
+  }
+  update.updateInformation(Organization, org, req, res)
 })
 
 module.exports = orgRoute;

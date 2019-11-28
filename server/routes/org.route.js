@@ -4,17 +4,17 @@ const orgRoute = express.Router();
 const Org = require('../modules/findOrg');
 const Organization = require('../models/organization');
 const bcrypt = require('bcryptjs');
-const config = require('./config');
 const jwt = require('jsonwebtoken');
 const Code = require('../modules/checkCode');
 const Badges = require('../models/Badges');
-const checkuser = require('../modules/findUser');
 const getBadge = require('../modules/findBadge');
 const badgeInfo = require('../modules/getBadge');
 const userBadges = require('../models/userBadges');
 const mongoose = require('mongoose');
 const test = require('../modules/test');
-const helper = require('../controller/getPending')
+const test2 = require('../controller/test.save');
+var helper = require('../controller/Badges')
+
 
 orgRoute.route('/orgsignup').post((req, res) => {
   getResult();
@@ -24,24 +24,7 @@ orgRoute.route('/orgsignup').post((req, res) => {
       if (result.data == 'not found' || result.data == undefined) {
         req.body.password = bcrypt.hashSync(req.body.password, 10);
         let org = new Organization(req.body);
-        org.save()
-          .then(() => {
-            var token = jwt.sign({
-              _id: org._id,
-              type: org.type
-            }, config.secret, {
-              expiresIn: 86400
-            });
-            res.status(200).send({
-              auth: true,
-              token: token
-            });
-          })
-          .catch((err) => {
-            res.status(400).json({
-              err: err.message
-            });
-          });
+        test2.SaveNewUser(org, res);
       } else {
         res.status(400).json({
           message: 'orgname is already taken!'
@@ -55,7 +38,6 @@ orgRoute.route('/orgsignup').post((req, res) => {
       console.log(err);
     }
   }
-  tempdata = {};
 });
 
 
@@ -64,13 +46,9 @@ orgRoute.route('/validatecode').post((req, res) => {
   async function checkCode() {
     var status = await Code.findSameCode(req.body.code);
     if (status == 'notTaken') {
-      res.status(200).json({
-        message: 'Ok'
-      });
+      res.status(200).json({ message: 'Ok' });
     } else {
-      res.status(400).json({
-        message: 'Code is taken, regenerate new!'
-      });
+      res.status(400).json({ message: 'Code is taken, regenerate new!' });
     }
   }
   checkCode();
@@ -80,17 +58,10 @@ orgRoute.route('/validatecode').post((req, res) => {
 orgRoute.route('/badges-org').post((req, res) => {
   console.log('request from the org')
   let org = jwt.decode(req.body.data);
-  Badges.find({
-      orgID: org._id,
-      granted: true
-    })
-    .then((doc) => {
-      if (doc) {
-        res.json({
-          badges: doc
-        });
-        console.log(doc)
-      };
+  let filter = { orgID: org._id, granted: true }
+  helper.findGrant(filter)
+    .then(resp => {
+      res.json({ badges: resp });
     })
     .catch(err => {
       res.send(err);
@@ -98,13 +69,11 @@ orgRoute.route('/badges-org').post((req, res) => {
 });
 
 orgRoute.route('/offerbadge').post((req, res) => {
-  let filename;
-  if (req.file == undefined) {
-    filename = 'certificateBG.jpg';
-  } else {
-    filename = req.file.filename;
-  }
+  console.log(req.body)
   let user = jwt.decode(req.body.user);
+  if (req.file == undefined) {
+    req.file.filename = 'certificateBG.jpg';
+  }
   let date = {
     month: req.body.month,
     day: req.body.day,
@@ -119,27 +88,22 @@ orgRoute.route('/offerbadge').post((req, res) => {
     recipient: req.body.recipient,
     certificateName: req.body.certificateName,
     descriptions: req.body.descriptions,
-    backgroundImg: filename,
+    backgroundImg: req.file.filename,
     orgID: user._id
   };
+
   let badges = new Badges(badgeData);
-  badges.save()
-    .then(() => {
-      res.json({
-        data: "Successfull"
-      });
-      console.log('saved')
-    }).catch((err) => {
-      res.status(400).json({
-        err: err.message
-      })
-      console.log(err);
+  helper.addNewBadge(badges)
+    .then(resp => {
+      res.json({ data: resp });
+    })
+    .catch(err => {
+      res.send(err);
     });
 });
 
 
 orgRoute.route('/addrecipient').post((req, res) => {
-  console.log(req.body);
   getResult();
   async function getResult() {
     try {
@@ -149,22 +113,12 @@ orgRoute.route('/addrecipient').post((req, res) => {
         lastname: 1
       }
       let result = await test.findUser(req.body.username, projection);
-      console.log(result.data)
       let badge = await badgeInfo.getBadge(req.body.code);
       let badgeResult = await getBadge.findBadge(result.data._id, badge._id);
       if (result.data != 'not found' || result.data == undefined) {
         if (badgeResult.data == 'not found') {
-          let recepient = {
-            username: result.data.username,
-            fullname: `${result.data.firstname} ${result.data.lastname}`
-          }
-          Badges.findByIdAndUpdate(badge._id, {
-              $push: {
-                recepients: recepient
-              }
-            }, {
-              new: true
-            })
+          let recepient = { username: result.data.username, fullname: `${result.data.firstname} ${result.data.lastname}` }
+          Badges.findByIdAndUpdate(badge._id, {$push:{recepients: recepient}}, { new: true})
             .then(doc => {
               console.log('the recepient')
               res.json({
@@ -214,60 +168,28 @@ orgRoute.route('/addrecipient').post((req, res) => {
 
 orgRoute.route("/pendingbadges").post((req, res) => {
   let org = jwt.decode(req.body.data);
-  console.log(org)
-  // socket io
-  Badges.find({
-    orgID: org._id,
-    granted: false
-  })
-    .then((doc) => {
-      if (doc) {
-        res.json({
-          badges: doc
-        });
-      }
+  let filter = { orgID: org._id, granted: false }
+  helper.findPending(filter)
+    .then(resp => {
+      res.json({ badges: resp });
+      console.log(resp)
     })
     .catch(err => {
-      res.status(500).json({
-        message: err.message
-      });
+      res.send(err);
     });
 });
 
-// var io = req.app.get("socketio");
-//   let data = req.body;
-//   io.emit("sample", data);
-
 orgRoute.route("/certify").post((req, res) => {
-  console.log(req.body)
   let id = req.body.badgeInfo.id
-  Badges.findByIdAndUpdate(mongoose.Types.ObjectId(id), {
-      granted: true
-    }, {
-      new: true
-    })
-    .then(doc => {
-      console.log(doc)
-      res.end()
-    })
-    .catch(err => {
-      console.log(err)
-      res.send(err)
-    })
+  Badges.findByIdAndUpdate(mongoose.Types.ObjectId(id), { granted: true }, { new: true })
+    .then(doc => { res.end() })
+    .catch(err => { res.send(err) });
+
   userBadges.updateMany({
-      badgeID: mongoose.Types.ObjectId(id)
-    }, {
-      status: true
-    })
-    .then((doc) => {
-      console.log("test");
-      console.log(doc)
-      res.end()
-    })
-    .catch((err) => {
-      console.log("Err::>>>>> " + err)
-      res.end()
-    })
+    badgeID: mongoose.Types.ObjectId(id)
+  }, { status: true })
+    .then((doc) => { res.end() })
+    .catch((err) => { res.send(err) })
 })
 
 

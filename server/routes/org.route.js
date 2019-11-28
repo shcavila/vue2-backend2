@@ -14,6 +14,7 @@ const mongoose = require('mongoose');
 const test = require('../modules/test');
 const test2 = require('../controller/test.save');
 var helper = require('../controller/Badges')
+const update = require('../modules/updateProfile');
 
 
 orgRoute.route('/orgsignup').post((req, res) => {

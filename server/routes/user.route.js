@@ -82,6 +82,7 @@ userRoute.route('/availbadge').post((req, res) => {
                   .catch(err => {
                     console.log(err)
                   });
+              //helper.addRecepient(Badges, badgeID, recepient)
                 res.json({ availedBadge: data, })
               })
               .catch((err) => {
@@ -103,6 +104,34 @@ userRoute.route('/availbadge').post((req, res) => {
     });
 });
 
+
+userRoute.route('/updateUser').post((req, res) => {
+  let user = jwt.decode(req.body.data)
+  User.findOne({ _id: user._id })
+    .then((data) => {
+      res.status(200).json(data)
+    })
+    .catch((err) => {
+      res.status(500).json({ err: err.message })
+    })
+});
+
+userRoute.route('/saveUpdate').post((req, res) => {
+  console.log(req.body)
+  let user = jwt.decode(req.body.user)
+  let date = {
+    month: req.body.month,
+    day: req.body.day,
+    year: req.body.year
+  }
+  if (req.file != undefined) {
+    req.body.profilePic = req.file.filename
+  }
+  req.body.birthdate = date;
+  Object.assign(req.body, {"JANE": "GwAPA"})
+  console.log(req.body)
+  update.updateInformation(User, user, req, res)
+})
 
 
 

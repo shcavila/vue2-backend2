@@ -24,12 +24,12 @@ function findPending(filter) {
             });
     })
 }
-function addNewBadge(Model){
+function addNewBadge(Model) {
     return new Promise((resolve, reject) => {
         Model.save()
-            .then(()  => {
+            .then(() => {
                 console.log('daved')
-                resolve({data:'Added successfully'})
+                resolve({ data: 'Added successfully' })
             })
             .catch(err => {
                 reject(err)
@@ -37,8 +37,17 @@ function addNewBadge(Model){
     })
 }
 
+function addRecepient(Collection, badgeID,recepient) {
+    return new Promise((resolve, reject) => {
+        Collection.findByIdAndUpdate(badgeID, { $push: { recepients: recepient } }, { new: true })
+        .then(doc => {resolve({badges: doc})})
+        .catch(err => {reject(err)})
+    })
+}
+
 module.exports = {
-    findPending,
-    findGrant,
-    addNewBadge
+            findPending,
+            findGrant,
+            addNewBadge,
+            addRecepient
 }

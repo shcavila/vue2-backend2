@@ -107,60 +107,41 @@ orgRoute.route('/addrecipient').post((req, res) => {
   getResult();
   async function getResult() {
     try {
-      let projection = {
-        username: 1,
-        firstname: 1,
-        lastname: 1
-      }
+      let projection = {username: 1,firstname: 1, lastname: 1}
       let result = await test.findUser(req.body.username, projection);
       let badge = await badgeInfo.getBadge(req.body.code);
       let badgeResult = await getBadge.findBadge(result.data._id, badge._id);
+
       if (result.data != 'not found' || result.data == undefined) {
         if (badgeResult.data == 'not found') {
           let recepient = { username: result.data.username, fullname: `${result.data.firstname} ${result.data.lastname}` }
-          Badges.findByIdAndUpdate(badge._id, {$push:{recepients: recepient}}, { new: true})
-            .then(doc => {
-              console.log('the recepient')
-              res.json({
-                badges: doc
-              })
-              console.log(doc);
-            })
-            .catch(err => {
-              console.log(err)
-            })
-          let data = {
-            userID: result.data._id,
-            badgeID: badge._id,
-            status: false
-          };
+          let data = {userID: result.data._id, badgeID: badge._id, status: false};
           let newBadge = new userBadges(data);
-          newBadge.save()
-            .then(() => {
-              console.log('saved')
+          helper.addRecepient(Badges,badge._id,recepient)
+          .then(resp => {
+            res.json({ data: resp });
+          })
+          .catch(err => {
+            res.send(err);
+            console.log(err)
+          });
+          helper.addNewBadge(newBadge)
+            .then(resp => {
+                res.json({ data: resp });
             })
-            .catch(err => {
-              res.status(400).json({
-                err: err.message
-              });
-              console.log(err);
-            });
+          .catch(err => {
+                res.send(err)
+            console.log(err)
+          });
 
         } else {
-          res.status(400).json({
-            err: 'already added'
-          })
+          res.status(400).json({err: 'already added'})
         }
       } else {
-        res.status(400).json({
-          message: 'not found'
-        });
+        res.status(400).json({message: 'not found'});
       }
     } catch (err) {
-      res.status(500).json({
-        message: 'Unexpected error occured!'
-      });
-      console.log(err);
+      res.status(500).json({  message: 'Unexpected error occured!'});
     }
   }
 
@@ -191,16 +172,5 @@ orgRoute.route("/certify").post((req, res) => {
     .then((doc) => { res.end() })
     .catch((err) => { res.send(err) })
 })
-
-
-
-
-
-
-
-
-
-
-
 
 module.exports = orgRoute;

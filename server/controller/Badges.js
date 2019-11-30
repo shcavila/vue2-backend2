@@ -1,8 +1,8 @@
 const Badges = require('../models/Badges');
 
-function findGrant(filter) {
+function findGrant(Collection,filter) {
     return new Promise((resolve, reject) => {
-        Badges.find(filter)
+        Collection.find(filter)
             .then(doc => {
                 console.log("dbres == ", doc)
                 resolve(doc)
@@ -37,13 +37,14 @@ function addNewBadge(Model) {
     })
 }
 
-function addRecepient(Collection, badgeID,recepient) {
+function addRecepient(badgeID,recepient) {
     return new Promise((resolve, reject) => {
-        Collection.findByIdAndUpdate(badgeID, { $push: { recepients: recepient } }, { new: true })
+        Badges.findByIdAndUpdate(badgeID, { $push: { recepients: recepient } }, { new: true })
         .then(doc => {resolve({badges: doc})})
         .catch(err => {reject(err)})
     })
 }
+
 
 module.exports = {
             findPending,

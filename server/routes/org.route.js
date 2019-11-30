@@ -60,7 +60,7 @@ orgRoute.route('/badges-org').post((req, res) => {
   console.log('request from the org')
   let org = jwt.decode(req.body.data);
   let filter = { orgID: org._id, granted: true }
-  helper.findGrant(filter)
+  helper.findGrant(Badges,filter)
     .then(resp => {
       res.json({ badges: resp });
     })

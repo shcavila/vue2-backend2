@@ -70,10 +70,13 @@ orgRoute.route('/badges-org').post((req, res) => {
 });
 
 orgRoute.route('/offerbadge').post((req, res) => {
-  console.log(req.body)
+ 
   let user = jwt.decode(req.body.user);
+  let filename;
   if (req.file == undefined) {
-    req.file.filename = 'certificateBG.jpg';
+    filename = 'certificateBG.jpg';
+  }else{
+    filename = req.file.filename;
   }
   let date = {
     month: req.body.month,
@@ -81,19 +84,19 @@ orgRoute.route('/offerbadge').post((req, res) => {
     year: req.body.year
   };
   req.body.date = date;
-//   let badgeData = {
-//     date: date,
-//     granted: req.body.granted,
-//     code: req.body.code,
-//     badgename: req.body.badgename,
-//     venue: req.body.venue,
-//     recipient: req.body.recipient,
-//     certificateName: req.body.certificateName,
-//     descriptions: req.body.descriptions,
-//     backgroundImg: req.file.filename,
-//     orgID: user._id
-//   };
-  Object.assign(req.body, { backgroundImg: req.file.filename, orgID: user._id})
+  let badgeData = {
+    date: date,
+    granted: req.body.granted,
+    code: req.body.code,
+    badgename: req.body.badgename,
+    venue: req.body.venue,
+    recipient: req.body.recipient,
+    certificateName: req.body.certificateName,
+    descriptions: req.body.descriptions,
+    backgroundImg: filename,
+    orgID: user._id
+  };
+  //Object.assign(req.body, { backgroundImg: req.file.filename, orgID: user._id})
 
   let badges = new Badges(badgeData);
   helper.addNewBadge(badges)
@@ -117,10 +120,10 @@ orgRoute.route('/addrecipient').post((req, res) => {
 
       if (result.data != 'not found' || result.data == undefined) {
         if (badgeResult.data == 'not found') {
-          let recepient = { username: result.data.username, fullname: `${result.data.firstname} ${result.data.lastname}` }
+          let recipient = { username: result.data.username, fullname: `${result.data.firstname} ${result.data.lastname}` }
           let data = {userID: result.data._id, badgeID: badge._id, status: false};
           let newBadge = new userBadges(data);
-          helper.addRecepient(Badges,badge._id,recepient)
+          helper.addrecipient(Badges,badge._id,recipient)
           .then(resp => {
             res.json({ data: resp });
           })

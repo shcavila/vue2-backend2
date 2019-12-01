@@ -37,9 +37,9 @@ function addNewBadge(Model) {
     })
 }
 
-function addRecepient(badgeID,recepient) {
+function addrecipient(badgeID,recipient) {
     return new Promise((resolve, reject) => {
-        Badges.findByIdAndUpdate(badgeID, { $push: { recepients: recepient } }, { new: true })
+        Badges.findByIdAndUpdate(badgeID, { $push: { recipients: recipient } }, { new: true })
         .then(doc => {resolve({badges: doc})})
         .catch(err => {reject(err)})
     })
@@ -50,5 +50,5 @@ module.exports = {
             findPending,
             findGrant,
             addNewBadge,
-            addRecepient
+            addrecipient
 }

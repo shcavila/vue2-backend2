@@ -59,85 +59,46 @@ userRoute.route('/userbadges').post((req, res) => {
 userRoute.route('/availbadge').post((req, res) => {
   var user = jwt.decode(req.body.user);
   async function availbadge(){
+  try {
     let badge = await helper.findPending({code : req.body.code});
     if(badge){
-      let datum =  { userID: mongoose.Types.ObjectId(user._id), badgeID: badge._id, status: false };
-      let availed = await helper.findGrant(datum);
-      if(!availed){
-        let newBadge = new userBadges(datum)
+      console.log('decoded',user)
+      let datum =  { userID: mongoose.Types.ObjectId(user._id), badgeID: badge[0]._id, status: false };
+      let availed = await helper.findGrant(userBadges,datum);
+      if(availed.length == 0){
+        let newBadge = new userBadges(datum);
         let addBadge = await helper.addNewBadge(newBadge);
         if(addBadge.data == "Added successfully"){
           let userInfo = await helper.findGrant(User,{_id : mongoose.Types.ObjectId(user._id)});
-          let recepient = {username: userInfo.username, fullname: `${userInfo.firstname} ${userInfo.lastname}`}
-          helper.addRecepient(badge._id,recepient)
+          let recipient = {username: userInfo[0].username, fullname: `${userInfo[0].firstname} ${userInfo[0].lastname}`}
+          helper.addrecipient(badge[0]._id,recipient)
           .then(resp =>{
             var io = req.app.get("socketio");
             io.emit("onUserAvail", resp);
-            console.log(resp)
+            res.json(resp);
           })
           .catch(err =>{
             res.send(err);
-          })
+          });
 
+        }else{
+          res.send('error in saving');
         }
-        else{
-          res.s
-        }
-
-
-      }
-      else{
-        res.send('badge already availed')
+     
+      }else{
+        res.send('badge already availed');
       }
 
     }else{
-      res.send('badge not found')
+      res.send('badge not found');
     }
+  
+  } catch (err) {
+    res.send(err)
   }
-  // Badges.findOne({ code: req.body.code })
-  //   .then((badgesData) => {
-  //     let badgeId = badgesData._id;
-  //     let datum = { userID: mongoose.Types.ObjectId(user._id), badgeID: badgeId, status: false }
-  //     userBadges.findOne(datum)
-  //       .then((doc) => {
-  //         if (!doc) {
-  //           console.log(doc)
-  //           let badgeSave = new userBadges(datum)
-  //           badgeSave.save()
-  //             .then((data) => {
-  //               console.log("Availed Succesfully!")
-  //               console.log(data)
-  //               let filter = { orgID: badgesData.orgID, granted: false }
-  //               helper.findPending(filter)
-  //                 .then(resp => {
-  //                   var io = req.app.get("socketio");
-  //                   let data = resp
-  //                   io.emit("onUserAvail", data);
-  //                   console.log(data)
-  //                 })
-  //                 .catch(err => {
-  //                   console.log(err)
-  //                 });
-  //             //helper.addRecepient(Badges, badgeID, recepient)
-  //               res.json({ availedBadge: data, })
-  //             })
-  //             .catch((err) => {
-  //               res.send(err)
-  //             })
-  //         }
-  //         else {
-  //           res.send('not found')
-  //           console.log(doc)
-  //         }
-  //       })
-  //       .catch((err) => {
-  //         console.log(err)
-  //       });
-  //   })
-  //   .catch((err) => {
-  //     console.log(err)
-  //     res.end()
-  //   });
+}
+  availbadge();
+  
 });
 
 

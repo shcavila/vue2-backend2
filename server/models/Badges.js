@@ -42,7 +42,7 @@ var BadgeSchema = new mongoose.Schema({
     type: String,
     required: false
   },
-  recepients:[{
+  recipients:[{
     _id:false,
     username:{type:String,required:false},
     fullname:{type:String,required:false}

@@ -5,6 +5,19 @@ const jwt = require('jsonwebtoken');
 const config = require('./config');
 const Org = require('../modules/findOrg');
 
+authRoute.route('/getuser').post(function (req, res) {
+  getUer()
+  async function getUer(){
+    try {
+      var fuser = await Org.findOrg(req.body.username);
+      if(fuser != 'not found'){
+        res.status(200).send({status: true,type: fuser.data.type, user: fuser.data})
+      }
+    } catch (error) {
+      
+    }
+  }
+})
 
 
 authRoute.route('/login').post(function (req, res) {

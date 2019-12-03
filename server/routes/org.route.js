@@ -154,12 +154,12 @@ orgRoute.route('/addrecipient').post((req, res) => {
                 res.json({
                   data: resp
                 });
+                
               })
               .catch(err => {
                 res.send(err)
                 console.log(err, 'error2')
               });
-              res.json(resp)
             })
             .catch(err => {
               res.send(err);
@@ -204,7 +204,8 @@ orgRoute.route("/pendingbadges").post((req, res) => {
 });
 
 orgRoute.route("/certify").post((req, res) => {
-  let id = req.body.badgeInfo._id
+  console.log(req.body,'test')
+  let id = req.body.badgeInfo.id
   let update = {
     granted: true,
     certificateName: req.body.badgeInfo.certificateName,

@@ -73,8 +73,6 @@ userRoute.route('/availbadge').post((req, res) => {
           let recipient = {username: userInfo[0].username, fullname: `${userInfo[0].firstname} ${userInfo[0].lastname}`}
           helper.addrecipient(badge[0]._id,recipient)
           .then(resp =>{
-            var io = req.app.get("socketio");
-            io.emit("onUserAvail", resp);
             res.json(resp);
           })
           .catch(err =>{
@@ -86,11 +84,11 @@ userRoute.route('/availbadge').post((req, res) => {
         }
      
       }else{
-        res.send('badge already availed');
+        res.status(400).json({message: "You are already in the list!"});
       }
 
     }else{
-      res.send('badge not found');
+      res.status(404).json({message: "Cannot find badge with the code "+data.code});
     }
   
   } catch (err) {

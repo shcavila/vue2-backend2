@@ -17,6 +17,7 @@ module.exports = {
             auth: true,
             token: token
           });
+          console.log(token,'token')
       }).catch(err => {
         res.send(err)
         console.log(err)

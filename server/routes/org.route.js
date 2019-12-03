@@ -25,6 +25,7 @@ orgRoute.route('/orgsignup').post((req, res) => {
       if (result.data == 'not found' || result.data == undefined) {
         req.body.password = bcrypt.hashSync(req.body.password, 10);
         let org = new Organization(req.body);
+        console.log(org)
         test2.SaveNewUser(org, res);
       } else {
         res.status(400).json({
@@ -47,9 +48,13 @@ orgRoute.route('/validatecode').post((req, res) => {
   async function checkCode() {
     var status = await Code.findSameCode(req.body.code);
     if (status == 'notTaken') {
-      res.status(200).json({ message: 'Ok' });
+      res.status(200).json({
+        message: 'Ok'
+      });
     } else {
-      res.status(400).json({ message: 'Code is taken, regenerate new!' });
+      res.status(400).json({
+        message: 'Code is taken, regenerate new!'
+      });
     }
   }
   checkCode();
@@ -59,10 +64,15 @@ orgRoute.route('/validatecode').post((req, res) => {
 orgRoute.route('/badges-org').post((req, res) => {
   console.log('request from the org')
   let org = jwt.decode(req.body.data);
-  let filter = { orgID: org._id, granted: true }
-  helper.findGrant(Badges,filter)
+  let filter = {
+    orgID: org._id,
+    granted: true
+  }
+  helper.findGrant(Badges, filter)
     .then(resp => {
-      res.json({ badges: resp });
+      res.json({
+        badges: resp
+      });
     })
     .catch(err => {
       res.send(err);
@@ -70,12 +80,12 @@ orgRoute.route('/badges-org').post((req, res) => {
 });
 
 orgRoute.route('/offerbadge').post((req, res) => {
- 
+  console.log(req.body)
   let user = jwt.decode(req.body.user);
   let filename;
   if (req.file == undefined) {
     filename = 'certificateBG.jpg';
-  }else{
+  } else {
     filename = req.file.filename;
   }
   let date = {
@@ -101,7 +111,9 @@ orgRoute.route('/offerbadge').post((req, res) => {
   let badges = new Badges(badgeData);
   helper.addNewBadge(badges)
     .then(resp => {
-      res.json({ data: resp });
+      res.json({
+        data: resp
+      });
     })
     .catch(err => {
       res.send(err);
@@ -110,44 +122,64 @@ orgRoute.route('/offerbadge').post((req, res) => {
 
 
 orgRoute.route('/addrecipient').post((req, res) => {
+  console.log(req.body,'req info')
   getResult();
   async function getResult() {
     try {
-      let projection = {username: 1,firstname: 1, lastname: 1}
+      let projection = {
+        username: 1,
+        firstname: 1,
+        lastname: 1
+      }
       let result = await test.findUser(req.body.username, projection);
       let badge = await badgeInfo.getBadge(req.body.code);
       let badgeResult = await getBadge.findBadge(result.data._id, badge._id);
 
       if (result.data != 'not found' || result.data == undefined) {
         if (badgeResult.data == 'not found') {
-          let recipient = { username: result.data.username, fullname: `${result.data.firstname} ${result.data.lastname}` }
-          let data = {userID: result.data._id, badgeID: badge._id, status: false};
-          let newBadge = new userBadges(data);
-          helper.addrecipient(Badges,badge._id,recipient)
-          .then(resp => {
-            res.json({ data: resp });
-          })
-          .catch(err => {
-            res.send(err);
-            console.log(err)
-          });
-          helper.addNewBadge(newBadge)
+          let recipient = {
+            username: result.data.username,
+            fullname: `${result.data.firstname} ${result.data.lastname}`
+          }
+          let data = {
+            userID: result.data._id,
+            badgeID: badge._id,
+            status: false
+          };
+          let newBadge = new userBadges(data);  
+          helper.addrecipient(badge._id, recipient)
             .then(resp => {
-                res.json({ data: resp });
-            })
-          .catch(err => {
+              helper.addNewBadge(newBadge)
+              .then(resp => {
+                res.json({
+                  data: resp
+                });
+              })
+              .catch(err => {
                 res.send(err)
-            console.log(err)
-          });
+                console.log(err, 'error2')
+              });
+              res.json(resp)
+            })
+            .catch(err => {
+              res.send(err);
+              console.log(err,'error1')
+            });
 
         } else {
-          res.status(400).json({err: 'already added'})
+          res.status(400).json({
+            err: 'already added'
+          })
         }
       } else {
-        res.status(400).json({message: 'not found'});
+        res.status(400).json({
+          message: 'not found'
+        });
       }
     } catch (err) {
-      res.status(500).json({  message: 'Unexpected error occured!'});
+      res.status(500).json({
+        message: 'Unexpected error occured!'
+      });
     }
   }
 
@@ -155,10 +187,15 @@ orgRoute.route('/addrecipient').post((req, res) => {
 
 orgRoute.route("/pendingbadges").post((req, res) => {
   let org = jwt.decode(req.body.data);
-  let filter = { orgID: org._id, granted: false }
+  let filter = {
+    orgID: org._id,
+    granted: false
+  }
   helper.findPending(filter)
     .then(resp => {
-      res.json({ badges: resp });
+      res.json({
+        badges: resp
+      });
       console.log(resp)
     })
     .catch(err => {
@@ -167,27 +204,50 @@ orgRoute.route("/pendingbadges").post((req, res) => {
 });
 
 orgRoute.route("/certify").post((req, res) => {
-  let id = req.body.badgeInfo.id
-  Badges.findByIdAndUpdate(mongoose.Types.ObjectId(id), { granted: true }, { new: true })
-    .then(doc => { res.end() })
-    .catch(err => { res.send(err) });
+  let id = req.body.badgeInfo._id
+  let update = {
+    granted: true,
+    certificateName: req.body.badgeInfo.certificateName,
+    descriptions: req.body.badgeInfo.descriptions,
+    approvedBy: req.body.badgeInfo.approvedBy
+
+  }
+  Badges.findByIdAndUpdate(mongoose.Types.ObjectId(id), update, {
+      new: true
+    })
+    .then(doc => {
+      res.json({data:doc})
+    })
+    .catch(err => {
+      res.send(err)
+    });
 
   userBadges.updateMany({
-    badgeID: mongoose.Types.ObjectId(id)
-  }, { status: true })
-    .then((doc) => { res.end() })
-    .catch((err) => { res.send(err) })
+      badgeID: mongoose.Types.ObjectId(id)
+    }, {
+      status: true
+    })
+    .then((doc) => {
+      res.end()
+    })
+    .catch((err) => {
+      res.send(err)
+    })
 })
 
 orgRoute.route('/updateOrg').post((req, res) => {
   console.log('Organization Update Retrieve')
   let org = jwt.decode(req.body.data)
-  Organization.findOne({ _id: org._id })
+  Organization.findOne({
+      _id: org._id
+    })
     .then((data) => {
       res.status(200).json(data)
     })
     .catch((err) => {
-      res.status(500).json({ err: err.message })
+      res.status(500).json({
+        err: err.message
+      })
     })
 });
 

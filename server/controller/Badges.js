@@ -33,6 +33,7 @@ function addNewBadge(Model) {
             })
             .catch(err => {
                 reject(err)
+                console.log(err)
             });
     })
 }

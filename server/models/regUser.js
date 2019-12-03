@@ -27,7 +27,7 @@ var userSchema = new mongoose.Schema({
       required: true,
       unique: false,
     },
-    occupation: {
+    profession: {
       type: String,
       required: false,
       unique: false,
@@ -40,11 +40,6 @@ var userSchema = new mongoose.Schema({
     address: {
       type: String,
       required: true,
-      unique: false,
-    },
-    years: {
-      type: Number,
-      required: false,
       unique: false,
     },
     age: {
@@ -61,7 +56,12 @@ var userSchema = new mongoose.Schema({
       type:String,
       required: true,
       default: 'profile.png'
+    },
+    school:{
+      type: String,
+      requried:false
     }
+    
     
   });
 

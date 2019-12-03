@@ -42,6 +42,11 @@ var orgSchema = new mongoose.Schema({
     required: false,
     unique: false,
   },
+  years: {
+    type: Number,
+    required: false,
+    unique: false,
+  },
 
 
 });

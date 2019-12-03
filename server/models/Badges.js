@@ -46,7 +46,11 @@ var BadgeSchema = new mongoose.Schema({
     _id:false,
     username:{type:String,required:false},
     fullname:{type:String,required:false}
-  }]
+  }],
+  approvedBy:{
+    type: String,
+    required: false
+  }
 
 
 });

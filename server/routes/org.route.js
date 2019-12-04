@@ -7,7 +7,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Code = require('../modules/checkCode');
 const Badges = require('../models/Badges');
-const getBadge = require('../modules/findBadge');  
+const getBadge = require('../modules/findBadge');
 const badgeInfo = require('../modules/getBadge');
 const userBadges = require('../models/userBadges');
 const mongoose = require('mongoose');
@@ -124,7 +124,7 @@ orgRoute.route('/offerbadge').post((req, res) => {
     backgroundImg: filename,
     orgID: user._id
   };
- 
+
   let badges = new Badges(badgeData);
   badgeHelper.addNewBadge(badges)
     .then(resp => {
@@ -139,33 +139,44 @@ orgRoute.route('/offerbadge').post((req, res) => {
 
 
 orgRoute.route('/addrecipient').post((req, res) => {
-  console.log(req.body,'req info')
+  console.log(req.body, 'req info')
   getResult();
   async function getResult() {
     try {
-      let projection = {username: 1, firstname: 1, lastname: 1}
+      let projection = {
+        username: 1,
+        firstname: 1,
+        lastname: 1
+      }
       let result = await test.findUser(req.body.username, projection);
       let badge = await badgeInfo.getBadge(req.body.code);
       let badgeResult = await getBadge.findBadge(result.data._id, badge._id);
 
       if (result.data != 'not found' || result.data == undefined) {
         if (badgeResult.data == 'not found') {
-          let recipient = {username: result.data.username, fullname: `${result.data.firstname} ${result.data.lastname}`};
-          let data = {userID: result.data._id, badgeID: badge._id, status: false};
-          let newBadge = new userBadges(data);  
-        
+          let recipient = {
+            username: result.data.username,
+            fullname: `${result.data.firstname} ${result.data.lastname}`
+          };
+          let data = {
+            userID: result.data._id,
+            badgeID: badge._id,
+            status: false
+          };
+          let newBadge = new userBadges(data);
+
           badgeHelper.addrecipient(badge._id, recipient)
             .then(resp => {
               badgeHelper.addNewBadge(newBadge)
-              .then(resp => {
-                res.json({
-                  data: resp
+                .then(resp => {
+                  res.json({
+                    data: resp
+                  });
+                  res.status(200).json(resp);
+                })
+                .catch(err => {
+                  res.status(500).send(err);
                 });
-                res.status(200).json(resp);
-              })
-              .catch(err => {
-                res.status(500).send(err);
-              });
             })
             .catch(err => {
               res.status(500).send(err);
@@ -209,7 +220,7 @@ orgRoute.route("/pendingbadges").post((req, res) => {
 });
 
 orgRoute.route("/certify").post((req, res) => {
-  console.log(req.body,'test')
+  console.log(req.body, 'test')
   let id = req.body.badgeInfo.id
   let update = {
     granted: true,
@@ -222,7 +233,9 @@ orgRoute.route("/certify").post((req, res) => {
       new: true
     })
     .then(doc => {
-      res.json({data:doc})
+      res.json({
+        data: doc
+      })
     })
     .catch(err => {
       res.send(err)
@@ -240,6 +253,27 @@ orgRoute.route("/certify").post((req, res) => {
       res.send(err)
     })
 });
+
+orgRoute.route('/deletebadge/:id').post((req, res) => {
+  let id = req.params.id
+  Badges.findByIdAndRemove({
+      _id: id
+    })
+    .then(doc => {
+      let deleteID = mongoose.Types.ObjectId(id)
+      userBadges.deleteMany({
+          "badgeID": deleteID
+        })
+        .then(doc => {
+          res.status(200).json(doc)
+        })
+    })
+    .catch(err => {
+      res.status(500).json({
+        err: err.message
+      })
+    })
+})
 
 
 orgRoute.route('/updateOrg').post((req, res) => {

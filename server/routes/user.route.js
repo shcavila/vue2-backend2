@@ -98,7 +98,7 @@ userRoute.route('/availbadge').post((req, res) => {
           });
 
         }else{
-          res.send('error in saving');
+          res.status(500).send('error in saving');
         }
      
       }else{

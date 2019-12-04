@@ -6,7 +6,7 @@ const config = require('./config');
 const Org = require('../modules/findOrg');
 
 authRoute.route('/getuser').post(function (req, res) {
-  getUer()
+  getUer();
   async function getUer(){
     try {
       var fuser = await Org.findOrg(req.body.username);
@@ -25,7 +25,6 @@ authRoute.route('/login').post(function (req, res) {
   async function getResult() {
     try {
       var fuser = await Org.findOrg(req.body.username);
-      console.log(fuser)
       if (fuser != 'not found') {
         bcrypt.compare(req.body.password, fuser.data.password)
           .then(match => {
@@ -50,10 +49,7 @@ authRoute.route('/login').post(function (req, res) {
             }
           })
           .catch(err => {
-            if (err) {
-              console.log(err);
               res.status(400).json(err);
-            }
           });
       } else if (fuser.data == 'not found') {
         res.status(404).json({
@@ -71,9 +67,7 @@ authRoute.route('/login').post(function (req, res) {
 
 
 authRoute.route('/userInfo').post((req, res) => {
-  console.log('org')
   var user = jwt.decode(req.body.data);
-  console.log(user)
 
   getResult();
   async function getResult() {
@@ -97,9 +91,7 @@ authRoute.route('/userInfo').post((req, res) => {
 });
 
 authRoute.route('/userType').post((req, res) => {
-  console.log(req.body.credential);
   var user = jwt.decode(req.body.credential);
-  console.log(user);
   var type = user.type;  //example the user type is 'Regular user'
   res.status(200).json({
     userType: type

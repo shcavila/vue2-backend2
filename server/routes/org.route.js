@@ -7,13 +7,13 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Code = require('../modules/checkCode');
 const Badges = require('../models/Badges');
-const getBadge = require('../modules/findBadge');
+const getBadge = require('../modules/findBadge');  
 const badgeInfo = require('../modules/getBadge');
 const userBadges = require('../models/userBadges');
 const mongoose = require('mongoose');
 const test = require('../modules/test');
-const test2 = require('../controller/test.save');
-var helper = require('../controller/Badges')
+var badgeHelper = require('../controller/Badges');
+
 const update = require('../modules/updateProfile');
 
 
@@ -68,7 +68,25 @@ orgRoute.route('/badges-org').post((req, res) => {
     orgID: org._id,
     granted: true
   }
-  helper.findGrant(Badges, filter)
+  badgeHelper.findGrant(Badges, filter)
+    .then(resp => {
+      res.json({
+        badges: resp
+      });
+    })
+    .catch(err => {
+      res.send(err);
+    });
+});
+
+orgRoute.route('/view-badges-org').post((req, res) => {
+  console.log('request from the org')
+  let idi = req.body.id
+  let filter = {
+    orgID: idi,
+    granted: true
+  }
+  badgeHelper.findGrant(Badges, filter)
     .then(resp => {
       res.json({
         badges: resp
@@ -80,7 +98,7 @@ orgRoute.route('/badges-org').post((req, res) => {
 });
 
 orgRoute.route('/offerbadge').post((req, res) => {
-  console.log(req.body)
+  console.log(req.body);
   let user = jwt.decode(req.body.user);
   let filename;
   if (req.file == undefined) {
@@ -106,17 +124,16 @@ orgRoute.route('/offerbadge').post((req, res) => {
     backgroundImg: filename,
     orgID: user._id
   };
-  //Object.assign(req.body, { backgroundImg: req.file.filename, orgID: user._id})
-
+ 
   let badges = new Badges(badgeData);
-  helper.addNewBadge(badges)
+  badgeHelper.addNewBadge(badges)
     .then(resp => {
       res.json({
         data: resp
       });
     })
     .catch(err => {
-      res.send(err);
+      res.status(400).send(err)
     });
 });
 
@@ -126,50 +143,38 @@ orgRoute.route('/addrecipient').post((req, res) => {
   getResult();
   async function getResult() {
     try {
-      let projection = {
-        username: 1,
-        firstname: 1,
-        lastname: 1
-      }
+      let projection = {username: 1, firstname: 1, lastname: 1}
       let result = await test.findUser(req.body.username, projection);
       let badge = await badgeInfo.getBadge(req.body.code);
       let badgeResult = await getBadge.findBadge(result.data._id, badge._id);
 
       if (result.data != 'not found' || result.data == undefined) {
         if (badgeResult.data == 'not found') {
-          let recipient = {
-            username: result.data.username,
-            fullname: `${result.data.firstname} ${result.data.lastname}`
-          }
-          let data = {
-            userID: result.data._id,
-            badgeID: badge._id,
-            status: false
-          };
+          let recipient = {username: result.data.username, fullname: `${result.data.firstname} ${result.data.lastname}`};
+          let data = {userID: result.data._id, badgeID: badge._id, status: false};
           let newBadge = new userBadges(data);  
-          helper.addrecipient(badge._id, recipient)
+        
+          badgeHelper.addrecipient(badge._id, recipient)
             .then(resp => {
-              helper.addNewBadge(newBadge)
+              badgeHelper.addNewBadge(newBadge)
               .then(resp => {
                 res.json({
                   data: resp
                 });
-                
+                res.status(200).json(resp);
               })
               .catch(err => {
-                res.send(err)
-                console.log(err, 'error2')
+                res.status(500).send(err);
               });
             })
             .catch(err => {
-              res.send(err);
-              console.log(err,'error1')
+              res.status(500).send(err);
             });
 
         } else {
           res.status(400).json({
-            err: 'already added'
-          })
+            message: 'already added'
+          });
         }
       } else {
         res.status(400).json({
@@ -191,7 +196,7 @@ orgRoute.route("/pendingbadges").post((req, res) => {
     orgID: org._id,
     granted: false
   }
-  helper.findPending(filter)
+  badgeHelper.findPending(filter)
     .then(resp => {
       res.json({
         badges: resp
@@ -234,7 +239,8 @@ orgRoute.route("/certify").post((req, res) => {
     .catch((err) => {
       res.send(err)
     })
-})
+});
+
 
 orgRoute.route('/updateOrg').post((req, res) => {
   console.log('Organization Update Retrieve')
@@ -251,6 +257,10 @@ orgRoute.route('/updateOrg').post((req, res) => {
       })
     })
 });
+
+// orgRoute.post('/removerecipient', (req, res) =>{
+//   let
+// })
 
 orgRoute.route('/saveUpdate').post((req, res) => {
   let org = jwt.decode(req.body.org)

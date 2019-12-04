@@ -7,8 +7,8 @@ const User = require('../models/regUser');
 const Badges = require('../models/Badges');
 const userBadges = require('../models/userBadges');
 const mongoose = require('mongoose');
-const test = require('../controller/test.save')
-var helper = require('../controller/Badges')
+const test = require('../controller/User');
+var badgeHelper = require('../controller/Badges');
 
 userRoute.route('/signup').post((req, res) => {
   tempdata = req.body;
@@ -26,7 +26,13 @@ userRoute.route('/fullsignup').post((req, res) => {
       if (result.data == 'not found' || result.data == undefined) {
         req.body.password = bcrypt.hashSync(req.body.password, 10);
         let user = new User(req.body);
-        test.SaveNewUser(user, res);
+       test.SaveNewUser(user)
+       .then((resp) =>{
+         res.json(resp);
+       })
+       .catch(err =>{
+         res.status(400).send(err);
+       })
       } else {
         res.status(400).json({
           message: 'Username is already taken!'
@@ -47,31 +53,43 @@ userRoute.route('/userbadges').post((req, res) => {
   let options = { _id: 0, userID: 0, date: 0 };
   let select = 'badgename venue certificateName description backgroundImg orgID';
   userBadges.find({ userID: mongoose.Types.ObjectId(user._id), status: false }, options).
-    populate('badgeID', select).
-    exec(function (err, badgeID) {
+    populate('badgeID')
+    .exec(function (err, badgeID) {
       if (err) return handleError(err);
       console.log(badgeID);
-      res.json(badgeID);
+      res.json({pendingBadges:badgeID});
     });
 });
 
+userRoute.route('/view-userbadges').post((req, res) => {
+  let userid = req.body.id
+  let options = { _id: 0, userID: 0, date: 0 };
+  let select = 'badgename venue certificateName description backgroundImg orgID';
+  userBadges.find({ userID: mongoose.Types.ObjectId(userid), status:true }, options).
+    populate('badgeID')
+    .exec(function (err, badgeID) {
+      if (err) return handleError(err);
+      console.log(badgeID);
+      res.json({badges:badgeID});
+    });
+});
 
 userRoute.route('/availbadge').post((req, res) => {
   var user = jwt.decode(req.body.user);
   async function availbadge(){
   try {
-    let badge = await helper.findPending({code : req.body.code});
+    let badge = await badgeHelper.findPending({code : req.body.code});
     if(badge){
-      console.log('decoded',user)
+      console.log('decoded',user);
       let datum =  { userID: mongoose.Types.ObjectId(user._id), badgeID: badge[0]._id, status: false };
-      let availed = await helper.findGrant(userBadges,datum);
+      let availed = await badgeHelper.findGrant(userBadges,datum);
       if(availed.length == 0){
         let newBadge = new userBadges(datum);
-        let addBadge = await helper.addNewBadge(newBadge);
+        let addBadge = await badgeHelper.addNewBadge(newBadge);
         if(addBadge.data == "Added successfully"){
-          let userInfo = await helper.findGrant(User,{_id : mongoose.Types.ObjectId(user._id)});
+          let userInfo = await badgeHelper.findGrant(User,{_id : mongoose.Types.ObjectId(user._id)});
           let recipient = {username: userInfo[0].username, fullname: `${userInfo[0].firstname} ${userInfo[0].lastname}`}
-          helper.addrecipient(badge[0]._id,recipient)
+          badgeHelper.addrecipient(badge[0]._id,recipient)
           .then(resp =>{
             res.json(resp);
           })

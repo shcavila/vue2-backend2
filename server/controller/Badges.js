@@ -39,7 +39,7 @@ function addrecipient(badgeID,recipient) {
         Badges.findByIdAndUpdate(badgeID, { $push: { recipients: recipient } }, { new: true })
         .then(doc => {resolve({badges: doc})})
         .catch(err => {reject(err)})
-    })
+    });
 }
 
 

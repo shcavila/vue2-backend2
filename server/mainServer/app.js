@@ -17,6 +17,7 @@ const url = 'mongodb+srv://badgebookdb:badgebookdb2019@cluster0-pn3a6.mongodb.ne
 
 
 mongoose.set('useCreateIndex', true);
+mongoose.set('useFindAndModify', false);
 
 mongoose
     .connect(config.DB, {

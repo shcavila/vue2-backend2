@@ -1,4 +1,3 @@
-//up for testing
 const express = require('express');
 const orgRoute = express.Router();
 const Org = require('../modules/findOrg');
@@ -12,6 +11,7 @@ const badgeInfo = require('../modules/getBadge');
 const userBadges = require('../models/userBadges');
 const mongoose = require('mongoose');
 const test = require('../modules/test');
+const userHelper = require('../controller/User')
 var badgeHelper = require('../controller/Badges');
 
 const update = require('../modules/updateProfile');
@@ -25,8 +25,13 @@ orgRoute.route('/orgsignup').post((req, res) => {
       if (result.data == 'not found' || result.data == undefined) {
         req.body.password = bcrypt.hashSync(req.body.password, 10);
         let org = new Organization(req.body);
-        console.log(org)
-        test2.SaveNewUser(org, res);
+        userHelper.SaveNewUser(org)
+        .then(resp =>{
+          res.json(resp);
+        })
+        .catch(err =>{
+          res.status(500).send(err);
+        });
       } else {
         res.status(400).json({
           message: 'orgname is already taken!'
@@ -62,7 +67,6 @@ orgRoute.route('/validatecode').post((req, res) => {
 });
 
 orgRoute.route('/badges-org').post((req, res) => {
-  console.log('request from the org')
   let org = jwt.decode(req.body.data);
   let filter = {
     orgID: org._id,
@@ -106,11 +110,7 @@ orgRoute.route('/offerbadge').post((req, res) => {
   } else {
     filename = req.file.filename;
   }
-  let date = {
-    month: req.body.month,
-    day: req.body.day,
-    year: req.body.year
-  };
+  let date = {month: req.body.month, day: req.body.day, year: req.body.year };
   req.body.date = date;
   let badgeData = {
     date: date,
@@ -126,7 +126,7 @@ orgRoute.route('/offerbadge').post((req, res) => {
   };
 
   let badges = new Badges(badgeData);
-  badgeHelper.addNewBadge(badges)
+  badgehelper.addNewBadge(badges)
     .then(resp => {
       res.json({
         data: resp
@@ -136,10 +136,7 @@ orgRoute.route('/offerbadge').post((req, res) => {
       res.status(400).send(err)
     });
 });
-
-
 orgRoute.route('/addrecipient').post((req, res) => {
-  console.log(req.body, 'req info')
   getResult();
   async function getResult() {
     try {
@@ -147,7 +144,7 @@ orgRoute.route('/addrecipient').post((req, res) => {
         username: 1,
         firstname: 1,
         lastname: 1
-      }
+      };
       let result = await test.findUser(req.body.username, projection);
       let badge = await badgeInfo.getBadge(req.body.code);
       let badgeResult = await getBadge.findBadge(result.data._id, badge._id);
@@ -241,13 +238,9 @@ orgRoute.route("/certify").post((req, res) => {
       res.send(err)
     });
 
-  userBadges.updateMany({
-      badgeID: mongoose.Types.ObjectId(id)
-    }, {
-      status: true
-    })
+  userBadges.updateMany({badgeID: mongoose.Types.ObjectId(id)}, {status: true})
     .then((doc) => {
-      res.end()
+      res.json({messsage:"Certified Succesfully"})
     })
     .catch((err) => {
       res.send(err)
@@ -279,9 +272,7 @@ orgRoute.route('/deletebadge/:id').post((req, res) => {
 orgRoute.route('/updateOrg').post((req, res) => {
   console.log('Organization Update Retrieve')
   let org = jwt.decode(req.body.data)
-  Organization.findOne({
-      _id: org._id
-    })
+  Organization.findOne({_id: org._id})
     .then((data) => {
       res.status(200).json(data)
     })
@@ -302,6 +293,22 @@ orgRoute.route('/saveUpdate').post((req, res) => {
     req.body.profilePic = req.file.filename
   }
   update.updateInformation(Organization, org, req, res)
-})
+});
+
+orgRoute.post('/removerecipient',(req, res)=>{
+  console.log(req.body, 'body');
+  let badgeID = req.body.badge_id;
+  let recipient = { username:req.body.recipient_username, fullname: req.body.recipient_name }
+  badgehelper.removerecipient(badgeID, recipient)
+  .then( resp =>{
+    res.json(resp);
+  })
+  .catch(err =>{
+    res.status(500).send(err)
+  });
+  
+   
+});
+
 
 module.exports = orgRoute;

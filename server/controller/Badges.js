@@ -1,4 +1,5 @@
 const Badges = require('../models/Badges');
+const userBadges = require('../models/userBadges');
 
 function findGrant(Collection,filter) {
     return new Promise((resolve, reject) => {
@@ -42,10 +43,29 @@ function addrecipient(badgeID,recipient) {
     })
 }
 
+function removerecipient(badgeID,userinfo) {
+    return new Promise((resolve, reject) => {
+        Badges.findByIdAndUpdate(badgeID, { $pull: { recipients: userinfo } }, { new: true })
+        .then(doc => {
+            return doc
+        })
+        .then(doc =>{
+            userBadges.findOneAndDelete({badgeID : doc._id})
+            .then((doc) =>{resolve({badges:doc})
+            }).catch(err =>{reject(err)})
+        })
+        .catch(err => {reject(err)})
+    })
+}
+
+
+
+
 
 module.exports = {
             findPending,
             findGrant,
             addNewBadge,
-            addrecipient
+            addrecipient,
+            removerecipient
 }

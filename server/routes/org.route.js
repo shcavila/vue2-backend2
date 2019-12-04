@@ -1,4 +1,3 @@
-//up for testing
 const express = require('express');
 const orgRoute = express.Router();
 const Org = require('../modules/findOrg');
@@ -13,7 +12,7 @@ const userBadges = require('../models/userBadges');
 const mongoose = require('mongoose');
 const test = require('../modules/test');
 const test2 = require('../controller/test.save');
-var helper = require('../controller/Badges')
+var badgehelper = require('../controller/Badges')
 const update = require('../modules/updateProfile');
 
 
@@ -62,13 +61,9 @@ orgRoute.route('/validatecode').post((req, res) => {
 });
 
 orgRoute.route('/badges-org').post((req, res) => {
-  console.log('request from the org')
   let org = jwt.decode(req.body.data);
-  let filter = {
-    orgID: org._id,
-    granted: true
-  }
-  helper.findGrant(Badges, filter)
+  let filter = { orgID: org._id, granted: true }
+  badgehelper.findGrant(Badges, filter)
     .then(resp => {
       res.json({
         badges: resp
@@ -80,7 +75,6 @@ orgRoute.route('/badges-org').post((req, res) => {
 });
 
 orgRoute.route('/offerbadge').post((req, res) => {
-  console.log(req.body)
   let user = jwt.decode(req.body.user);
   let filename;
   if (req.file == undefined) {
@@ -88,11 +82,7 @@ orgRoute.route('/offerbadge').post((req, res) => {
   } else {
     filename = req.file.filename;
   }
-  let date = {
-    month: req.body.month,
-    day: req.body.day,
-    year: req.body.year
-  };
+  let date = {month: req.body.month, day: req.body.day, year: req.body.year };
   req.body.date = date;
   let badgeData = {
     date: date,
@@ -106,10 +96,9 @@ orgRoute.route('/offerbadge').post((req, res) => {
     backgroundImg: filename,
     orgID: user._id
   };
-  //Object.assign(req.body, { backgroundImg: req.file.filename, orgID: user._id})
 
   let badges = new Badges(badgeData);
-  helper.addNewBadge(badges)
+  badgehelper.addNewBadge(badges)
     .then(resp => {
       res.json({
         data: resp
@@ -119,10 +108,7 @@ orgRoute.route('/offerbadge').post((req, res) => {
       res.send(err);
     });
 });
-
-
 orgRoute.route('/addrecipient').post((req, res) => {
-  console.log(req.body,'req info')
   getResult();
   async function getResult() {
     try {
@@ -147,9 +133,9 @@ orgRoute.route('/addrecipient').post((req, res) => {
             status: false
           };
           let newBadge = new userBadges(data);  
-          helper.addrecipient(badge._id, recipient)
+          badgehelper.addrecipient(badge._id, recipient)
             .then(resp => {
-              helper.addNewBadge(newBadge)
+              badgehelper.addNewBadge(newBadge)
               .then(resp => {
                 res.json({
                   data: resp
@@ -160,6 +146,7 @@ orgRoute.route('/addrecipient').post((req, res) => {
                 res.send(err)
                 console.log(err, 'error2')
               });
+              res.json(resp)
             })
             .catch(err => {
               res.send(err);
@@ -191,7 +178,7 @@ orgRoute.route("/pendingbadges").post((req, res) => {
     orgID: org._id,
     granted: false
   }
-  helper.findPending(filter)
+  badgehelper.findPending(filter)
     .then(resp => {
       res.json({
         badges: resp
@@ -223,13 +210,9 @@ orgRoute.route("/certify").post((req, res) => {
       res.send(err)
     });
 
-  userBadges.updateMany({
-      badgeID: mongoose.Types.ObjectId(id)
-    }, {
-      status: true
-    })
+  userBadges.updateMany({badgeID: mongoose.Types.ObjectId(id)}, {status: true})
     .then((doc) => {
-      res.end()
+      res.json({messsage:"Certified Succesfully"})
     })
     .catch((err) => {
       res.send(err)
@@ -239,9 +222,7 @@ orgRoute.route("/certify").post((req, res) => {
 orgRoute.route('/updateOrg').post((req, res) => {
   console.log('Organization Update Retrieve')
   let org = jwt.decode(req.body.data)
-  Organization.findOne({
-      _id: org._id
-    })
+  Organization.findOne({_id: org._id})
     .then((data) => {
       res.status(200).json(data)
     })
@@ -258,6 +239,22 @@ orgRoute.route('/saveUpdate').post((req, res) => {
     req.body.profilePic = req.file.filename
   }
   update.updateInformation(Organization, org, req, res)
-})
+});
+
+orgRoute.post('/removerecipient',(req, res)=>{
+  console.log(req.body, 'body');
+  let badgeID = req.body.badge_id;
+  let recipient = { username:req.body.recipient_username, fullname: req.body.recipient_name }
+  badgehelper.removerecipient(badgeID, recipient)
+  .then( resp =>{
+    res.json(resp);
+  })
+  .catch(err =>{
+    res.status(500).send(err)
+  });
+  
+   
+});
+
 
 module.exports = orgRoute;

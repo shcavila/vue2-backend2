@@ -52,7 +52,7 @@ var userSchema = new mongoose.Schema({
       required: true,
       unique: false,
     },
-    profile:{
+    profilePic:{
       type:String,
       required: true,
       default: 'profile.png'

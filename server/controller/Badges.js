@@ -3,7 +3,7 @@ const userBadges = require('../models/userBadges');
 
 function findGrant(Collection,filter) {
     return new Promise((resolve, reject) => {
-        Collection.find(filter)
+        Collection.find(filter).sort({_id: 1})
             .then(doc => {
                 resolve(doc);
             })
@@ -14,7 +14,7 @@ function findGrant(Collection,filter) {
 }
 function findPending(filter) {
     return new Promise((resolve, reject) => {
-        Badges.find(filter)
+        Badges.find(filter).sort({_id: 1})
             .then(doc => {
                 resolve(doc);
             })

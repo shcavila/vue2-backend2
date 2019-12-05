@@ -50,6 +50,11 @@ var BadgeSchema = new mongoose.Schema({
   approvedBy:{
     type: String,
     required: false
+  },
+  organization: {
+    type: String, 
+    required: false, 
+    unique: false
   }
 
 

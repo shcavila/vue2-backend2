@@ -126,7 +126,7 @@ orgRoute.route('/offerbadge').post((req, res) => {
   };
 
   let badges = new Badges(badgeData);
-  badgehelper.addNewBadge(badges)
+  badgeHelper.addNewBadge(badges)
     .then(resp => {
       res.json({
         data: resp
@@ -216,36 +216,45 @@ orgRoute.route("/pendingbadges").post((req, res) => {
     });
 });
 
-orgRoute.route("/certify").post((req, res) => {
+ //GIUSAB NAKO
+ orgRoute.route("/certify").post((req, res) => {
   console.log(req.body, 'test')
-  let id = req.body.badgeInfo.id
-  let update = {
-    granted: true,
-    certificateName: req.body.badgeInfo.certificateName,
-    descriptions: req.body.badgeInfo.descriptions,
-    approvedBy: req.body.badgeInfo.approvedBy
-
-  }
-  Badges.findByIdAndUpdate(mongoose.Types.ObjectId(id), update, {
+  var user = jwt.decode(req.body.badgeInfo.token);
+  Organization.findOne({ _id: user._id }).then(doc => {
+    name = doc.orgName;
+    let id = req.body.badgeInfo.id
+    let update = {
+      granted: true,
+      certificateName: req.body.badgeInfo.certificateName,
+      descriptions: req.body.badgeInfo.descriptions,
+      approvedBy: req.body.badgeInfo.approvedBy,
+      organization: name
+    }
+    Badges.findByIdAndUpdate(mongoose.Types.ObjectId(id), update, {
       new: true
     })
-    .then(doc => {
-      res.json({
-        data: doc
+      .then(doc => {
+        res.json({ data: doc })
       })
-    })
-    .catch(err => {
-      res.send(err)
-    });
+      .catch(err => {
+        res.send(err)
+      });
+    userBadges.updateMany({
+      badgeID: mongoose.Types.ObjectId(id)
+    }, {
+        status: true
+      })
+      .then((doc) => {
+        res.end()
+      })
+      .catch((err) => {
+        res.send(err)
+      })
+  }).catch(err => {
+    res.send(err);
+  })
+})
 
-  userBadges.updateMany({badgeID: mongoose.Types.ObjectId(id)}, {status: true})
-    .then((doc) => {
-      res.json({messsage:"Certified Succesfully"})
-    })
-    .catch((err) => {
-      res.send(err)
-    })
-});
 
 orgRoute.route('/deletebadge/:id').post((req, res) => {
   let id = req.params.id
@@ -299,7 +308,7 @@ orgRoute.post('/removerecipient',(req, res)=>{
   console.log(req.body, 'body');
   let badgeID = req.body.badge_id;
   let recipient = { username:req.body.recipient_username, fullname: req.body.recipient_name }
-  badgehelper.removerecipient(badgeID, recipient)
+  badgeHelper.removerecipient(badgeID, recipient)
   .then( resp =>{
     res.json(resp);
   })

@@ -20,7 +20,7 @@ mongoose.set('useCreateIndex', true);
 mongoose.set('useFindAndModify', false);
 
 mongoose
-    .connect(config.DB, {
+    .connect(url, {
         useUnifiedTopology: true,
         useNewUrlParser: true,
     })
@@ -48,7 +48,7 @@ app.use(cors());
 
 
 app.use('/auth', authRoute);
-app.use('/user', userRoute);
+app.use('/user', upload.single('img'), userRoute);
 app.use('/org',upload.single('img'), orgRoute);
 
 

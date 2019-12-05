@@ -51,7 +51,7 @@ authRoute.route('/login').post(function (req, res) {
           .catch(err => {
               res.status(400).json(err);
           });
-      } else if (fuser.data == 'not found') {
+      } else if (fuser == 'not found') {
         res.status(404).json({
           message: 'user not found!'
         });

@@ -47,7 +47,7 @@ var orgSchema = new mongoose.Schema({
     required: false,
     unique: false,
   },
-  profile:{
+  profilePic:{
     type: String,
     default: "profile.png",
     required: false
